@@ -5,12 +5,12 @@ export const registerEmailUser = async (req, res) => {
 
     try {
 
-        const [existingUser] = await db.query('SELECT * FROM users WHERE email = ?', [email]);
+        const [existingUser] = await db.query('SELECT * FROM users WHERE u_Email = ?', [email]);
         if (existingUser.length > 0) {
             return res.status(409).json({ message: 'Cet email est déjà enregistré.' });
         }
 
-        const result = await db.query('INSERT INTO users email VALUES (?)', [email, password]);
+        const result = await db.query('INSERT INTO users (u_Email) VALUES (?)', [email]);
 
         res.status(201).json({
             message: 'Utilisateur enregistré avec succès.',
