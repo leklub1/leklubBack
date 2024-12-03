@@ -1,36 +1,33 @@
 import { createNewUserService } from '../Service/userService.js';
-import {createNewUserSubscription} from '../Service/subscriptionService.js';
-import {createNewUserPayment} from '../Service/paymentService.js';
+import { createNewUserSubscription } from '../Service/subscriptionService.js';
+import { createNewUserPayment } from '../Service/paymentService.js';
+import { createMonthlySubscription } from '../Utils/mollieUtils.js'; // Supposons que cette fonction est définie dans ce fichier
 
-/**
- * Controller qui permet de créer un nouvel utilisateur
- * @param {*} req 
- * @param {*} res 
- */
 export const createNewUser = async (req, res) => {
     const { email } = req.body;
 
     try {
         const result = await createNewUserService(email);
 
-        if (result.success) {
+        // const statementPayment = await createNewUserPayment(userId, null);
+        // const statementSubscription = await createNewUserSubscription(userId, null);
 
-            let statementPayment = await createNewUserPayment(result.userId);
-            let statementSubscription = await createNewUserSubscription(result.userId,statementPayment.paymentId);
+        // if (statementPayment.success && statementSubscription.success) {
+            const paymentUrl = await createMonthlySubscription(result.userId, 'https://287c-2a02-842a-14c-3601-5cef-642f-8515-36ac.ngrok-free.app/api/payment/webhook');
 
-            if(statementPayment.success && statementSubscription.success){
-                res.status(201).json({
-                    message: 'Utilisateur enregistré avec succès.',
+            if (paymentUrl) {
+                return res.status(201).json({
+                    message: 'Test de paiement réussi, redirigez vers cette URL.',
+                    paymentUrl,
                 });
-            }else{
-                res.status(500).json({ message: "Erreur interne du serveur." });
+            } else {
+                return res.status(500).json({ message: 'Impossible de générer l\'URL de paiement.' });
             }
-
-        } else {
-            res.status(result.status).json({ message: result.message });
-        }
+        // } else {
+        //     return res.status(500).json({ message: 'Erreur interne lors de l\'initialisation des données.' });
+        // }
     } catch (error) {
-        console.error('Erreur lors de la création de l\'utilisateur :', error);
-        res.status(500).json({ message: "Erreur interne du serveur." });
+        console.error('Erreur lors du test de création de l\'utilisateur :', error);
+        res.status(500).json({ message: 'Erreur interne du serveur.' });
     }
 };
