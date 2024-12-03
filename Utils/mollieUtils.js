@@ -14,18 +14,21 @@ const mollieClient = createMollieClient({ apiKey: process.env.MOLLIE_API_KEY });
  */
 export async function createMonthlySubscription(userId, webhookUrl) {
     try {
-        // Étape 1 : Créer un paiement initial pour la souscription
         const payment = await mollieClient.payments.create({
             amount: { value: '4.80', currency: 'EUR' },
             description: `Subscription for user ${userId}`,
-            redirectUrl: `http://localhost/LeKlub/LeKlubFront/payment.html`, // Page de paiement après succès
+            redirectUrl: `http://localhost/LeKlub/LeKlubFront/payment.html`, 
             webhookUrl,
-            metadata: { userId }, // Lier l'ID utilisateur au paiement
+            metadata: { userId }, 
         });
 
-        // Étape 2 : Retourner l'URL de redirection pour le paiement
+        const paymentId = payment.id;
+
         if (payment && payment._links && payment._links.checkout) {
-            return payment._links.checkout.href;
+            return {
+                paymentId, 
+                paymentUrl: payment._links.checkout.href
+            };
         } else {
             throw new Error('Erreur lors de la génération de l\'URL de paiement.');
         }

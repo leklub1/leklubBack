@@ -1,30 +1,35 @@
-import mollie from '@mollie/api-client'; // Importer le module Mollie (en tant qu'importation par défaut)
+import { createMollieClient } from '@mollie/api-client';
 import dotenv from 'dotenv';
 
-dotenv.config();  // Charger les variables d'environnement (notamment l'API Key)
+dotenv.config();
 
-const mollieClient = mollie.createMollieClient({ apiKey: process.env.MOLLIE_API_KEY }); // Créer une instance de mollieClient avec la clé API
+const mollieClient = createMollieClient({ apiKey: process.env.MOLLIE_API_KEY });
 
-// Fonction pour gérer le webhook envoyé par Mollie
 export const handlePaymentWebhook = async (req, res) => {
-    const paymentId = req.body.id;  // Récupérer l'ID du paiement envoyé par Mollie
-
+    console.log('En-têtes de la requête:', req.headers); 
+    console.log('Webhook reçu:', req.body);  
+  
+    const { id: paymentId } = req.body;
+  
+    if (!paymentId) {
+        console.error('ID de paiement manquant dans le webhook');
+        return res.status(400).send('ID de paiement manquant');
+    }
+  
     try {
-        // Récupérer les informations du paiement depuis Mollie
-        const payment = await mollieClient.payments.get(paymentId);
 
-        // Vérifiez si le paiement a été effectué
-        if (payment.isPaid()) {
-            // Logique si le paiement est réussi
+        const payment = await mollieClient.payments.get(paymentId);
+        const isPaid = payment.isPaid();
+  
+        if (isPaid) {
             console.log('Le paiement a été effectué avec succès !');
             res.status(200).send('Paiement validé');
         } else {
-            // Logique si le paiement est échoué ou en attente
-            console.log('Le paiement a échoué ou est en attente');
-            res.status(200).send('Paiement échoué ou en attente');
+            console.log(`Le paiement n'a pas été effectué, il est actuellement : ${payment.status}`);
+            res.status(200).send(`Paiement non validé, statut actuel : ${payment.status}`);
         }
     } catch (error) {
         console.error('Erreur lors du traitement du webhook:', error);
         res.status(500).send('Erreur serveur');
     }
-}
+};
