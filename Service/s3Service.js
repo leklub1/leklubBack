@@ -62,3 +62,27 @@ export const uploadProfilePhoto = async (userId, base64Photo) => {
         throw new Error('Erreur lors du téléchargement de la photo de profil');
     }
 };
+
+export const uploadQrCode = async (userId, qrCode) => {
+    try {
+      
+        const photoParams = {
+            Bucket: process.env.AWS_BUCKET_NAME,
+            Key: `users/${userId}/qrCode/qrCode.png`,
+            Body: qrCode,
+            ContentType: 'image/png',
+        };
+
+        const uploadPhoto = new Upload({
+            client: s3Client,
+            params: photoParams
+        });
+
+        await uploadPhoto.done();
+        console.log('QrCode téléchargée avec succès!');
+        
+    } catch (error) {
+        console.error('Erreur lors du téléchargement du qr code dans S3:', error);
+        throw new Error('Erreur lors du téléchargement du qr code dans S3');
+    }
+};

@@ -2,7 +2,7 @@ import { createNewUserService,getDefaultDataService,insertUserDataService } from
 import { createNewUserSubscription } from '../Service/subscriptionService.js';
 import { createNewUserPayment } from '../Service/paymentService.js';
 import { createMonthlySubscription } from '../Utils/mollieUtils.js';
-import { createS3Folders,uploadProfilePhoto } from '../Service/s3Service.js'
+import { createS3Folders,uploadProfilePhoto,uploadQrCode } from '../Service/s3Service.js'
 import { generateQRCode } from '../Utils/qrCode.js';
 
 /**
@@ -73,7 +73,8 @@ export const insertUserData = async (req, res) => {
         await createS3Folders(userId);
         await uploadProfilePhoto(userId,file);
 
-        await generateQRCode(userId);
+        let qrCodeBuffer = await generateQRCode(userId);
+        await uploadQrCode(userId,qrCodeBuffer);
         
         return res.status(200).json(statement); 
     } catch (error) {
