@@ -3,6 +3,7 @@ import { createNewUserSubscription } from '../Service/subscriptionService.js';
 import { createNewUserPayment } from '../Service/paymentService.js';
 import { createMonthlySubscription } from '../Utils/mollieUtils.js';
 import { createS3Folders,uploadProfilePhoto } from '../Service/s3Service.js'
+import { generateQRCode } from '../Utils/qrCode.js';
 
 /**
  * permet d'initialiser l'utilisateur et d'initialiser le payement avec mollie
@@ -72,6 +73,8 @@ export const insertUserData = async (req, res) => {
         await createS3Folders(userId);
         await uploadProfilePhoto(userId,file);
 
+        await generateQRCode(userId);
+        
         return res.status(200).json(statement); 
     } catch (error) {
         console.error('Erreur lors de la mise à jour des données utilisateur:', error);
