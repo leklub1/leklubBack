@@ -8,7 +8,7 @@ import QRCode from 'qrcode';
 export function generateQRCode(userId) {
   return new Promise((resolve, reject) => {
 
-    const url = `http://180.149.197.7/valider?userId=${userId}`;
+    const url = `http://180.149.197.7/valider.html?userId=${userId}`;
 
     QRCode.toBuffer(url, { type: 'png' }, (err, buffer) => {
         if (err) {
