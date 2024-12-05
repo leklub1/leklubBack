@@ -1,8 +1,14 @@
-import { createNewUserService } from '../Service/userService.js';
+import { createNewUserService,getDefaultDataService } from '../Service/userService.js';
 import { createNewUserSubscription } from '../Service/subscriptionService.js';
 import { createNewUserPayment } from '../Service/paymentService.js';
 import { createMonthlySubscription } from '../Utils/mollieUtils.js';
 
+/**
+ * permet d'initialiser l'utilisateur et d'initialiser le payement avec mollie
+ * @param {*} req 
+ * @param {*} res 
+ * @returns 
+ */
 export const createNewUser = async (req, res) => {
     const { email } = req.body;
 
@@ -27,5 +33,30 @@ export const createNewUser = async (req, res) => {
     } catch (error) {
         console.error('Erreur lors du test de création de l\'utilisateur :', error);
         res.status(500).json({ message: 'Erreur interne du serveur.' });
+    }
+};
+
+/**
+ * Permet de récupérer les informations de base de l'utilisateur mail + id
+ * @param {*} req 
+ * @param {*} res 
+ * @returns 
+ */
+export const getDefaultData = async (req, res) => {
+    const { orderId } = req.query;
+    console.log(orderId);
+    if (!orderId) {return res.status(400).send('orderId est requis');}
+
+    try {
+
+        const userData = await getDefaultDataService(orderId);
+
+        if (userData === null) {return res.status(404).send('Aucun utilisateur trouvé pour ce orderId');}
+
+        return res.status(200).json(userData);
+
+    } catch (error) {
+        console.error('Erreur lors de la récupération des données utilisateur:', error);
+        return res.status(500).send('Erreur interne du serveur');
     }
 };
