@@ -29,7 +29,11 @@ export const createNewUserService = async (email) => {
         throw new Error('Erreur interne du serveur');
     }
 };
-
+/**
+ * Service qui permet d'avoir les infos de base => mail + id
+ * @param {*} orderId 
+ * @returns 
+ */
 export const getDefaultDataService = async (orderId) => {
     try {
         let [rows] = await db.query(
@@ -49,3 +53,29 @@ export const getDefaultDataService = async (orderId) => {
         throw new Error('Erreur interne du serveur');
     }
 }
+/**
+ * Permet d'inserer les données du formulaire
+ * @param {*} firstName 
+ * @param {*} lastName 
+ * @param {*} email 
+ * @param {*} phone 
+ * @param {*} userId 
+ * @returns 
+ */
+export const insertUserDataService = async (firstName, lastName, email, phone, userId) => {
+    try {
+        const termsAccepted = new Date().toISOString().slice(0, 19).replace('T', ' ');
+        const [rows] = await db.query(
+            'UPDATE users SET u_FirstName = ?, u_LastName = ?, u_DateAcceptationCGU = ?, u_Email = ?, u_Phone = ? WHERE u_Id = ?',
+            [firstName, lastName, termsAccepted, email, phone, userId]
+        );
+        if (rows.affectedRows === 0) {
+            return false;
+        } else {
+            return true;
+        }
+    } catch (error) {
+        console.error(`Erreur lors de la mise à jour des données de l'utilisateur ${userId} :`, error);
+        throw new Error('Erreur interne du serveur');
+    }
+};
