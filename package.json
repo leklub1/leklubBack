@@ -2,10 +2,11 @@
   "name": "leklubback",
   "version": "1.0.0",
   "type": "module",
-  "description": "",
+  "description": "��#\u0000 \u0000l\u0000e\u0000k\u0000l\u0000u\u0000b\u0000B\u0000a\u0000c\u0000k\u0000\r\u0000 \u0000",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
   },
   "author": "",
   "license": "ISC",
@@ -15,5 +16,13 @@
     "dotenv": "^16.4.5",
     "express": "^4.21.1",
     "mysql2": "^3.11.5"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/leklub1/leklubBack.git"
+  },
+  "bugs": {
+    "url": "https://github.com/leklub1/leklubBack/issues"
+  },
+  "homepage": "https://github.com/leklub1/leklubBack#readme"
 }

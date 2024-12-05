@@ -12,14 +12,16 @@ const mollieClient = createMollieClient({ apiKey: process.env.MOLLIE_API_KEY });
  * @param {string} webhookUrl - L'URL pour les notifications de paiement.
  * @returns {Promise<string>} - URL de redirection pour le paiement.
  */
-export async function createMonthlySubscription(userId, webhookUrl) {
+export async function createMonthlySubscription(orderId, webhookUrl) {
     try {
+
+
         const payment = await mollieClient.payments.create({
             amount: { value: '4.80', currency: 'EUR' },
-            description: `Subscription for user ${userId}`,
-            redirectUrl: `http://localhost/LeKlub/LeKlubFront/payment.html`, 
+            description: `Payement : ${orderId}`,
+            redirectUrl: `http://180.149.197.7/checkPayment.html?paymentId=${orderId}`,
             webhookUrl,
-            metadata: { userId }, 
+            metadata: { orderId }, 
         });
 
         const paymentId = payment.id;
@@ -27,7 +29,7 @@ export async function createMonthlySubscription(userId, webhookUrl) {
         if (payment && payment._links && payment._links.checkout) {
             return {
                 paymentId, 
-                paymentUrl: payment._links.checkout.href
+                paymentUrl: payment._links.checkout.href,
             };
         } else {
             throw new Error('Erreur lors de la génération de l\'URL de paiement.');

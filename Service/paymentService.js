@@ -5,10 +5,10 @@ import db from '../Config/dbConfig.js';
  * @param {Int} userId 
  * @returns {Object}
  */
-export const createNewUserPayment = async (userId,mollieId) => {
+export const createNewUserPayment = async (userId,mollieId,orderId) => {
     try {
 
-        const [result] = await db.query('INSERT INTO payments (p_UserId, p_StatusId,p_MollieId) VALUES (?, ?, ?)',[userId, 1,mollieId] );
+        const [result] = await db.query('INSERT INTO payments (p_UserId, p_StatusId,p_MollieId,p_OrderId) VALUES (?, ?, ?, ?)',[userId, 1,mollieId,orderId] );
 
         return {
             success: true,
