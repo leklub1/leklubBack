@@ -2,6 +2,7 @@ import userRoutes from './Router/userRoutes.js';
 import paymentRoutes from './Router/paymentRoutes.js';
 import express from 'express';
 import cors from 'cors';
+import bodyParser from 'body-parser';
 
 const app = express();
 app.use(cors());
@@ -9,6 +10,8 @@ app.use(cors());
 const PORT = 3000;
 
 app.use(express.urlencoded({ extended: true })); 
+app.use(bodyParser.json({ limit: '50mb' }));  // 50 Mo pour les JSON
+app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
 
 app.use(express.json()); 
 
