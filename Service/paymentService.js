@@ -72,3 +72,22 @@ export const updatePaymentStatus = async (mollieId, statusId) => {
         throw new Error('Erreur interne du serveur');
     }
 }
+/**
+ * permet de récupérer le status du payement
+ * @param {*} orderId 
+ * @returns 
+ */
+export const getPaymentStatusService = async (orderId) => {
+    try {
+        let [rows] = await db.query('SELECT p_StatusId FROM payments WHERE p_OrderId = ?', [orderId]);
+
+        if (rows.length === 0) {
+            return null;
+        } else {
+            return rows[0].p_StatusId;
+        }
+    } catch (error) {
+        console.error(`Erreur lors de la récupération du status de l'utilisateur ${orderId} :`, error);
+        throw new Error('Erreur interne du serveur');
+    }
+};
