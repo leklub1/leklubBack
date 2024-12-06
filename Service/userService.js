@@ -8,12 +8,27 @@ import db from '../Config/dbConfig.js';
 export const createNewUserService = async (email) => {
     try {
 
-        const [existingUser] = await db.query('SELECT * FROM users WHERE u_Email = ?', [email]);
+        const [existingUser] = await db.query('SELECT u_Id FROM users WHERE u_Email = ?', [email]);
         if (existingUser.length > 0) {
+
+            const [status] = await db.query(`
+                SELECT p_StatusId,p_OrderId
+                FROM payments p
+                INNER JOIN users u ON p.p_UserId = u.u_Id
+                WHERE p.p_UserId = ? AND p.p_StatusId = ? 
+                AND u.u_FirstName IS NULL AND u.u_LastName IS NULL
+            `, [existingUser[0].u_Id, 2]);
+            
+            if (status.length > 0) {
+                return {
+                    success: false,
+                    status: 200,
+                    paymentUrl: `http://180.149.197.7/checkPayment.html?paymentId=${status[0].p_OrderId}`,
+                };
+            }
             return {
-                success: false,
-                status: 409,
-                message: 'Cet email est déjà enregistré.',
+                success: true,
+                userId: existingUser[0].u_Id,
             };
         }
 
