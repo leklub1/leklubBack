@@ -1,8 +1,8 @@
-import { createNewUserService,getDefaultDataService,insertUserDataService } from '../Service/userService.js';
+import { createNewUserService,getDefaultDataService,insertUserDataService,getAllUserDataService } from '../Service/userService.js';
 import { createNewUserSubscription } from '../Service/subscriptionService.js';
 import { createNewUserPayment } from '../Service/paymentService.js';
 import { createMonthlySubscription } from '../Utils/mollieUtils.js';
-import { createS3Folders,uploadProfilePhoto,uploadQrCode } from '../Service/s3Service.js'
+import { createS3Folders,uploadProfilePhoto,uploadQrCode,getProfilePhotoUrl } from '../Service/s3Service.js'
 import { generateQRCode } from '../Utils/qrCodeUtils.js';
 import { insertQrCodeInDb } from '../Service/qrCodeService.js';
 
@@ -82,6 +82,46 @@ export const insertUserData = async (req, res) => {
     } catch (error) {
         console.error('Erreur lors de la mise à jour des données utilisateur:', error);
         return res.status(500).json(false); 
+    }
+};
+/**
+ * Controller qui permet d'envoyer les datas du qrCode
+ * @param {*} req 
+ * @param {*} res 
+ * @returns 
+ */
+export const getAllUserData = async (req, res) => {
+    const { userId } = req.query;
+
+    if (!userId) {
+        return res.status(400).send('User ID manquant');
+    }
+
+    try {
+
+        const userData = await getAllUserDataService(userId);
+        
+        if (!userData) {
+            return res.status(404).send('Utilisateur non trouvé');
+        }
+
+        const profilPictureUrl = await getProfilePhotoUrl(userId);
+
+        const response = {
+            ...userData,
+            profilPictureUrl,
+        };
+
+        return res.status(200).json(response);
+
+    } catch (error) {
+        console.error('Erreur lors de la récupération des données de l\'utilisateur:', error);
+
+        if (error.message === 'Erreur interne du serveur') {
+            return res.status(500).send('Erreur serveur');
+        }
+
+        return res.status(500).send('Erreur inconnue');
     }
 };
 

@@ -79,3 +79,28 @@ export const insertUserDataService = async (firstName, lastName, email, phone, u
         throw new Error('Erreur interne du serveur');
     }
 };
+/**
+ * Permet de récupérer les datas de l'utilisauteurs pour le qr code 
+ */
+export const getAllUserDataService = async (userId) => {
+    try {
+        let [rows] = await db.query(
+            'SELECT u_FirstName, u_LastName,u_Email FROM users WHERE u_Id = ?',
+            [userId]
+        );
+        if (rows.length === 0) {
+            return null;
+        } else {
+            return {
+                firstName: rows[0].u_FirstName,
+                lastName: rows[0].u_LastName,
+                email: rows[0].u_Email
+            }
+        }
+    } catch (error) {
+        console.error(`Erreur lors de la récupération des data de l'utilisateur ${userId} :`, error);
+        throw new Error('Erreur interne du serveur');
+    }
+}
+
+
