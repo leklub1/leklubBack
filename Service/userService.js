@@ -21,7 +21,6 @@ export const createNewUserService = async (email) => {
             
             if (status.length > 0) {
                 return {
-                    success: false,
                     status: 200,
                     paymentUrl: `http://180.149.197.7/checkPayment.html?paymentId=${status[0].p_OrderId}`,
                 };
@@ -29,6 +28,7 @@ export const createNewUserService = async (email) => {
             return {
                 success: true,
                 userId: existingUser[0].u_Id,
+                exist:true
             };
         }
 
