@@ -72,4 +72,28 @@ export const updateSubscriptionUserService = async (subscriptionId, status, next
         throw new Error('Erreur interne du serveur');
     }
 };
+/**
+ * Permet de vérifier si un abonnement est valide
+ * @param {*} userId 
+ * @returns 
+ */
+export const isSubscriptionValid = async (userId) => {
+    try {
+        const [rows] = await db.query(
+            'SELECT s_StatusId FROM subscriptions WHERE s_UserId = ? LIMIT 1',
+            [userId]
+        );
 
+        if (rows.length === 0) {
+            console.warn(`Aucune subscription trouvée pour l'utilisateur avec l'ID ${userId}`);
+            return false;
+        }
+
+        const { s_StatusId } = rows[0];
+        return s_StatusId === 1;
+
+    } catch (error) {
+        console.error('Erreur lors de la vérification de l\'abonnement :', error);
+        throw new Error('Erreur interne du serveur');
+    }
+};

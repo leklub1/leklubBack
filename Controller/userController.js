@@ -1,5 +1,5 @@
 import { createNewUserService,getDefaultDataService,insertUserDataService,getAllUserDataService,getUserEmailByIdService } from '../Service/userService.js';
-import { createNewUserSubscription,getIdWithLib } from '../Service/subscriptionService.js';
+import { createNewUserSubscription,getIdWithLib,isSubscriptionValid } from '../Service/subscriptionService.js';
 import { createNewUserPayment,UpdateUserPayment } from '../Service/paymentService.js';
 import { createPayment,createSubscriptionPayments } from '../Utils/mollieUtils.js';
 import { createS3Folders,uploadProfilePhoto,uploadQrCode,getProfilePhotoUrl } from '../Service/s3Service.js'
@@ -135,10 +135,12 @@ export const getAllUserData = async (req, res) => {
         }
 
         const profilPictureUrl = await getProfilePhotoUrl(userId);
-
+        const isValidSubscription = await isSubscriptionValid(userId); 
+        
         const response = {
             ...userData,
             profilPictureUrl,
+            isValidSubscription
         };
 
         return res.status(200).json(response);
