@@ -20,30 +20,6 @@ export const createNewUserPayment = async (userId,mollieId,orderId,customerId) =
         throw new Error('Erreur interne du serveur');
     }
 };
-/**
- * Permet de mettre a jour le mollieID & orderId à jour
- * @param {*} userId 
- * @param {*} mollieId 
- * @param {*} orderId 
- * @returns 
- */
-export const UpdateUserPayment = async (userId,mollieId,orderId,customerId) => {
-    try {
-
-        const [result] = await db.query(
-            'UPDATE payments SET p_MollieId = ?, p_OrderId = ?,p_CustomerId = ? WHERE p_UserId = ? ',
-            [mollieId, orderId,customerId, userId]
-        );
-        return {
-            success: true,
-            paymentId: result.insertId,
-        };
-
-    } catch (error) {
-        console.error('Erreur dans le service de création de l\'utilisateur :', error);
-        throw new Error('Erreur interne du serveur');
-    }
-};
 
 /**
  * service permettant de gérer le webhook de mollie et modifier les etats en base de données

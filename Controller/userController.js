@@ -1,6 +1,6 @@
 import { createNewUserService,getDefaultDataService,insertUserDataService,getAllUserDataService,getUserEmailByIdService } from '../Service/userService.js';
 import { createNewUserSubscription,getIdWithLib,isSubscriptionValid } from '../Service/subscriptionService.js';
-import { createNewUserPayment,UpdateUserPayment } from '../Service/paymentService.js';
+import { createNewUserPayment} from '../Service/paymentService.js';
 import { createPayment,createSubscriptionPayments } from '../Utils/mollieUtils.js';
 import { createS3Folders,uploadProfilePhoto,uploadQrCode,getProfilePhotoUrl } from '../Service/s3Service.js'
 import { generateQRCode } from '../Utils/qrCodeUtils.js';
@@ -17,23 +17,22 @@ export const createNewUser = async (req, res) => {
 
     try {
         const result = await createNewUserService(email);
-        
+        console.log("result",result)
         if (result.status === 200) {
             return res.status(200).json({ 
                 message: 'compte && payment effectué.',
                 paymentUrl: result.paymentUrl
             });
-        } else {
+        }else if(result.status === 202){
+            return res.status(202).json({message: "OK"});
+        }else {
             const orderId = new Date().getTime();
             const { paymentId, paymentUrl } = await createPayment(orderId, 'http://180.149.197.7:3000/api/payment/webhook',result.customerId);
     
             if (paymentUrl && paymentId) {
-                if(result.exist){
-                    await UpdateUserPayment(result.userId, paymentId, orderId,result.customerId);
-                }else{
-                    await createNewUserPayment(result.userId, paymentId, orderId,result.customerId);
-                }
-    
+
+                await createNewUserPayment(result.userId, paymentId, orderId,result.customerId);
+
                 return res.status(201).json({
                     message: 'Test de paiement réussi, redirigez vers cette URL.',
                     paymentUrl,

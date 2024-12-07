@@ -11,27 +11,25 @@ export const createNewUserService = async (email) => {
         const [existingUser] = await db.query('SELECT u_Id FROM users WHERE u_Email = ?', [email]);
         if (existingUser.length > 0) {
 
-            const [status] = await db.query(`
-                SELECT p_StatusId,p_OrderId
-                FROM payments p
-                INNER JOIN users u ON p.p_UserId = u.u_Id
-                WHERE p.p_UserId = ? AND p.p_StatusId = ? 
-                AND u.u_FirstName IS NULL AND u.u_LastName IS NULL
-            `, [existingUser[0].u_Id, 2]);
-            
-            if (status.length > 0) {
+            // Vérifier si un utilisateur à un paiement open
+            let customerUser = await checkIfUserAsPaid(existingUser[0].u_Id);
+            if(customerUser !== null){
                 return {
-                    status: 200,
-                    paymentUrl: `http://180.149.197.7/checkPayment.html?paymentId=${status[0].p_OrderId}`,
+                    success: true,
+                    userId: existingUser[0].u_Id,
+                    customerId: customerUser
                 };
             }
-            const customerId = await createMollieCustomer(email);
-            return {
-                success: true,
-                userId: existingUser[0].u_Id,
-                exist:true,
-                customerId:customerId
-            };
+            // Vérifier si un utilisateur à remplit le formulaire
+            let orderId = await checkIfUserAsPaidWithNoSubscription(existingUser[0].u_Id);
+            if(orderId !== null){
+                return {
+                    status: 200,
+                    paymentUrl: `http://180.149.197.7/checkPayment.html?paymentId=${orderId}`,
+                };
+            }else{
+                return {status: 202};
+            }
         }
 
         const customerId = await createMollieCustomer(email);
@@ -48,6 +46,64 @@ export const createNewUserService = async (email) => {
         throw new Error('Erreur interne du serveur');
     }
 };
+
+/**
+ * Fonction qui permet de vérifier un utilisateur a payer puis n'as pas remplit le formulaire
+ * @param {*} userId 
+ * @returns 
+ */
+const checkIfUserAsPaidWithNoSubscription = async (userId) => {
+    try {
+        const [status] = await db.query(`
+            SELECT p_StatusId,p_OrderId
+            FROM payments p
+            INNER JOIN users u ON p.p_UserId = u.u_Id
+            WHERE p.p_UserId = ? AND p.p_StatusId = ? 
+            AND u.u_FirstName IS NULL AND u.u_LastName IS NULL
+        `, [userId, 2]);
+
+        if (status.length > 0) {
+            console.log(status[0].p_OrderId)
+
+            return status[0].p_OrderId;
+        }else{
+            return null;
+        }
+
+    } catch (error) {
+        console.error('Erreur lors de la vérification si l\'utilisateur à remplit le formulaire :', error);
+        throw new Error('Erreur interne du serveur');
+    }
+}
+/**
+ * Fonction qui permet de vérifier un utilisateur a payer puis n'as pas remplit le formulaire
+ * @param {*} userId 
+ * @returns 
+ */
+const checkIfUserAsPaid = async (userId) => {
+    try {
+        const [status] = await db.query(`
+            SELECT p_CustomerId
+            FROM payments p
+            INNER JOIN users u ON p.p_UserId = u.u_Id
+            WHERE p.p_UserId = ? AND p.p_StatusId = ? 
+            AND u.u_FirstName IS NULL AND u.u_LastName IS NULL
+        `, [userId, 1]);
+
+        if (status.length > 0) {
+            console.log(status[0].p_CustomerId)
+
+            return status[0].p_CustomerId;
+        }else{
+            return null;
+        }
+
+    } catch (error) {
+        console.error('Erreur lors de la vérification si l\'utilisateur à remplit le formulaire :', error);
+        throw new Error('Erreur interne du serveur');
+    }
+}
+
 /**
  * Service qui permet d'avoir les infos de base => mail + id
  * @param {*} orderId 
