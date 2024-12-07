@@ -1,11 +1,11 @@
-import { createNewUserService,getDefaultDataService,insertUserDataService,getAllUserDataService } from '../Service/userService.js';
+import { createNewUserService,getDefaultDataService,insertUserDataService,getAllUserDataService,getUserEmailByIdService } from '../Service/userService.js';
 import { createNewUserSubscription,getIdWithLib } from '../Service/subscriptionService.js';
 import { createNewUserPayment,UpdateUserPayment } from '../Service/paymentService.js';
 import { createPayment,createSubscriptionPayments } from '../Utils/mollieUtils.js';
 import { createS3Folders,uploadProfilePhoto,uploadQrCode,getProfilePhotoUrl } from '../Service/s3Service.js'
 import { generateQRCode } from '../Utils/qrCodeUtils.js';
 import { insertQrCodeInDb } from '../Service/qrCodeService.js';
-
+import { sendEmail } from '../Utils/emailUtils.js'
 /**
  * permet d'initialiser l'utilisateur et d'initialiser le payement avec mollie
  * @param {*} req 
@@ -94,6 +94,18 @@ export const insertUserData = async (req, res) => {
         let qrCodeBuffer = await generateQRCode(userId);
         await uploadQrCode(userId,qrCodeBuffer);
         await insertQrCodeInDb(userId);
+
+        let userEmail = await getUserEmailByIdService(userId);
+        if(userEmail !== null){
+            const attachments = [
+                {
+                    filename: 'qrcode.png',        
+                    content: qrCodeBuffer,         
+                    contentType: 'image/png'       
+                }
+            ];
+            await sendEmail(userEmail,'Merci pour votre achat','Vous retrouverez votre qr code en piece jointe',attachments);
+        }
 
         return res.status(200).json(statement); 
     } catch (error) {

@@ -122,4 +122,19 @@ export const getAllUserDataService = async (userId) => {
     }
 }
 
-
+export const getUserEmailByIdService = async (userId) => {
+    try {
+        let [rows] = await db.query(
+            'SELECT u_Email FROM users WHERE u_Id = ?',
+            [userId]
+        );
+        if (rows.length === 0) {
+            return null;
+        } else {
+            return rows[0].u_Email;
+        }
+    } catch (error) {
+        console.error(`Erreur lors de la récupération des data de l'utilisateur ${userId} :`, error);
+        throw new Error('Erreur interne du serveur');
+    }
+}
