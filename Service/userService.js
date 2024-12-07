@@ -1,5 +1,5 @@
 import db from '../Config/dbConfig.js';
-
+import {createMollieCustomer} from '../Utils/mollieUtils.js';
 /**
  * permet de créer un nouvel utilisateur dans la table users
  * @param {String} email 
@@ -25,18 +25,22 @@ export const createNewUserService = async (email) => {
                     paymentUrl: `http://180.149.197.7/checkPayment.html?paymentId=${status[0].p_OrderId}`,
                 };
             }
+            const customerId = await createMollieCustomer(email);
             return {
                 success: true,
                 userId: existingUser[0].u_Id,
-                exist:true
+                exist:true,
+                customerId:customerId
             };
         }
 
+        const customerId = await createMollieCustomer(email);
         const [result] = await db.query('INSERT INTO users (u_Email) VALUES (?)', [email]);
 
         return {
             success: true,
             userId: result.insertId,
+            customerId:customerId
         };
 
     } catch (error) {

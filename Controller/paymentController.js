@@ -17,8 +17,10 @@ export const handlePaymentWebhook = async (req, res) => {
 
     try {
         const payment = await mollieClient.payments.get(mollieId);
+        console.log("================== PAYEMENT=======================")
         console.log('MollieId:', mollieId); 
         console.log('Status:', payment.status);  
+        console.log("==================================================")
 
         await handlePaymentWebhookService(mollieId, payment.status);
 

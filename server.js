@@ -1,5 +1,6 @@
 import userRoutes from './Router/userRoutes.js';
 import paymentRoutes from './Router/paymentRoutes.js';
+import subscriptionRoutes from './Router/subscriptionRoutes.js'
 import express from 'express';
 import cors from 'cors';
 import bodyParser from 'body-parser';
@@ -17,6 +18,7 @@ app.use(express.json());
 
 app.use('/api/users', userRoutes);
 app.use('/api/payment', paymentRoutes);
+app.use('/api/subscription', subscriptionRoutes);
 
 app.get('/test', (req, res) => {
     res.send('Serveur Node.js fonctionne correctement !');

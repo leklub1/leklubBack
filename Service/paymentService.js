@@ -5,10 +5,10 @@ import db from '../Config/dbConfig.js';
  * @param {Int} userId 
  * @returns {Object}
  */
-export const createNewUserPayment = async (userId,mollieId,orderId) => {
+export const createNewUserPayment = async (userId,mollieId,orderId,customerId) => {
     try {
 
-        const [result] = await db.query('INSERT INTO payments (p_UserId, p_StatusId,p_MollieId,p_OrderId) VALUES (?, ?, ?, ?)',[userId, 1,mollieId,orderId] );
+        const [result] = await db.query('INSERT INTO payments (p_UserId, p_StatusId,p_MollieId,p_OrderId,p_CustomerId) VALUES (?, ?, ?, ?, ?)',[userId, 1,mollieId,orderId,customerId] );
 
         return {
             success: true,
@@ -27,12 +27,12 @@ export const createNewUserPayment = async (userId,mollieId,orderId) => {
  * @param {*} orderId 
  * @returns 
  */
-export const UpdateUserPayment = async (userId,mollieId,orderId) => {
+export const UpdateUserPayment = async (userId,mollieId,orderId,customerId) => {
     try {
 
         const [result] = await db.query(
-            'UPDATE payments SET p_MollieId = ?, p_OrderId = ? WHERE p_UserId = ?',
-            [mollieId, orderId, userId]
+            'UPDATE payments SET p_MollieId = ?, p_OrderId = ?,p_CustomerId = ? WHERE p_UserId = ? ',
+            [mollieId, orderId,customerId, userId]
         );
         return {
             success: true,

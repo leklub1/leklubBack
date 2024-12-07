@@ -1,7 +1,7 @@
 import { createNewUserService,getDefaultDataService,insertUserDataService,getAllUserDataService } from '../Service/userService.js';
-import { createNewUserSubscription } from '../Service/subscriptionService.js';
+import { createNewUserSubscription,getIdWithLib } from '../Service/subscriptionService.js';
 import { createNewUserPayment,UpdateUserPayment } from '../Service/paymentService.js';
-import { createMonthlySubscription } from '../Utils/mollieUtils.js';
+import { createPayment,createSubscriptionPayments } from '../Utils/mollieUtils.js';
 import { createS3Folders,uploadProfilePhoto,uploadQrCode,getProfilePhotoUrl } from '../Service/s3Service.js'
 import { generateQRCode } from '../Utils/qrCodeUtils.js';
 import { insertQrCodeInDb } from '../Service/qrCodeService.js';
@@ -25,15 +25,13 @@ export const createNewUser = async (req, res) => {
             });
         } else {
             const orderId = new Date().getTime();
-            const { paymentId, paymentUrl } = await createMonthlySubscription(orderId, 'http://180.149.197.7:3000/api/payment/webhook');
+            const { paymentId, paymentUrl } = await createPayment(orderId, 'http://180.149.197.7:3000/api/payment/webhook',result.customerId);
     
             if (paymentUrl && paymentId) {
                 if(result.exist){
-                    console.log(paymentId,' ' ,orderId)
-                    await UpdateUserPayment(result.userId, paymentId, orderId);
+                    await UpdateUserPayment(result.userId, paymentId, orderId,result.customerId);
                 }else{
-                    await createNewUserPayment(result.userId, paymentId, orderId);
-
+                    await createNewUserPayment(result.userId, paymentId, orderId,result.customerId);
                 }
     
                 return res.status(201).json({
@@ -53,7 +51,6 @@ export const createNewUser = async (req, res) => {
         });
     }
 };
-
 
 /**
  * Permet de récupérer les informations de base de l'utilisateur mail + id
@@ -89,6 +86,10 @@ export const insertUserData = async (req, res) => {
 
         await createS3Folders(userId);
         await uploadProfilePhoto(userId,file);
+
+        const { subscriptionId, createdAt, nextPaymentDate, startDate, status } = await createSubscriptionPayments(userId);
+        let statusId = getIdWithLib(status);
+        await createNewUserSubscription(userId,subscriptionId,startDate,statusId,createdAt,nextPaymentDate);
 
         let qrCodeBuffer = await generateQRCode(userId);
         await uploadQrCode(userId,qrCodeBuffer);
