@@ -21,7 +21,9 @@ export const createNewUserSubscription = async (userId,subscriptionId,startDate,
         throw new Error('Erreur interne du serveur');
     }
 };
-
+/**
+ * Permet de retourner l'id correspondant au libelle
+ */
 export const getIdWithLib = (libelle) => {
     switch (libelle) {
         case 'active':
@@ -40,3 +42,34 @@ export const getIdWithLib = (libelle) => {
             return 7;
     }
 };
+/**
+ * Permet de mettre à jour la subscription lors de la réception d'un webhook
+ * @param {string} subscriptionId - L'ID de la souscription (format Mollie)
+ * @param {string} status - Le statut de la souscription (ex: 'active', 'cancelled', etc.)
+ * @param {string} nextPaymentDate - La prochaine date de paiement, par ex: '2025-01-07'
+ */
+export const updateSubscriptionUserService = async (subscriptionId, status, nextPaymentDate) => {
+    try {
+        const statusId = getIdWithLib(status);
+
+        if (!statusId) {
+            console.error(`Statut inconnu: ${status}`);
+            return { success: false, message: 'Statut inconnu' };
+        }
+
+        const [result] = await db.query(
+            'UPDATE subscriptions SET s_StatusId = ?, s_NextPaymentDate = ? WHERE s_SubscriptionId = ?',
+            [statusId, nextPaymentDate, subscriptionId]
+        );
+
+        if (result.affectedRows === 0) {
+            return { success: false, message: 'Aucun abonnement trouvé avec cet ID' };
+        }
+
+        return { success: true };
+    } catch (error) {
+        console.error('Erreur lors de la mise à jour de la subscription :', error);
+        throw new Error('Erreur interne du serveur');
+    }
+};
+

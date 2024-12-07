@@ -23,7 +23,7 @@ export const handlePaymentWebhook = async (req, res) => {
         console.log("==================================================")
 
         await handlePaymentWebhookService(mollieId, payment.status);
-
+        return res.status(200).send('OK');
     } catch (error) {
         console.error('Erreur lors du traitement du webhook:', error);
         return res.status(500).send('Erreur serveur');
