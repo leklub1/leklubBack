@@ -17,7 +17,7 @@ export const createNewUser = async (req, res) => {
 
     try {
         const result = await createNewUserService(email);
-        console.log("result",result)
+
         if (result.status === 200) {
             return res.status(200).json({ 
                 message: 'compte && payment effectué.',

@@ -97,3 +97,21 @@ export const isSubscriptionValid = async (userId) => {
         throw new Error('Erreur interne du serveur');
     }
 };
+
+/**
+ * Fonction qui permet si un utilisateur a un abonnement
+ * @param {*} userId 
+ * @returns 
+ */
+export const checkIfUserHasSubscription = async (userId) => {
+    try {
+        const [rows] = await db.query(`
+            SELECT * FROM subscriptions WHERE s_UserId = ?
+        `, [userId]);
+
+        return rows.length > 0;
+    } catch (error) {
+        console.error('Erreur lors de la vérification si l\'utilisateur a une souscription :', error);
+        throw new Error('Erreur interne du serveur');
+    }
+};
