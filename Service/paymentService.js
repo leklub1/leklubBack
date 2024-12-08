@@ -92,3 +92,22 @@ export const getPaymentStatusService = async (orderId) => {
         throw new Error('Erreur interne du serveur');
     }
 };
+/**
+ * Permet de récupérer le userID a partir du orderId
+ * @param {*} orderId 
+ * @returns 
+ */
+export const getUserIdByOrderId = async (orderId) => {
+    try {
+        let [rows] = await db.query('SELECT p_UserId FROM payments WHERE p_OrderId = ?', [orderId]);
+
+        if (rows.length === 0) {
+            return null;
+        } else {
+            return rows[0].p_UserId;
+        }
+    } catch (error) {
+        console.error(`Erreur lors de la récupération du status de l'utilisateur ${orderId} :`, error);
+        throw new Error('Erreur interne du serveur');
+    }
+}

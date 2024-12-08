@@ -1,7 +1,7 @@
 import { createNewUserService,getDefaultDataService,insertUserDataService,getAllUserDataService,getUserEmailByIdService } from '../Service/userService.js';
-import { createNewUserSubscription,getIdWithLib,isSubscriptionValid } from '../Service/subscriptionService.js';
+import { isSubscriptionValid } from '../Service/subscriptionService.js';
 import { createNewUserPayment} from '../Service/paymentService.js';
-import { createPayment,createSubscriptionPayments } from '../Utils/mollieUtils.js';
+import { createPayment } from '../Utils/mollieUtils.js';
 import { createS3Folders,uploadProfilePhoto,uploadQrCode,getProfilePhotoUrl } from '../Service/s3Service.js'
 import { generateQRCode } from '../Utils/qrCodeUtils.js';
 import { insertQrCodeInDb } from '../Service/qrCodeService.js';
@@ -37,6 +37,7 @@ export const createNewUser = async (req, res) => {
                     message: 'Test de paiement réussi, redirigez vers cette URL.',
                     paymentUrl,
                 });
+                
             } else {
                 return res.status(500).json({ 
                     message: 'Impossible de générer l\'URL de paiement.' 
@@ -85,10 +86,6 @@ export const insertUserData = async (req, res) => {
 
         await createS3Folders(userId);
         await uploadProfilePhoto(userId,file);
-
-        const { subscriptionId, createdAt, nextPaymentDate, startDate, status } = await createSubscriptionPayments(userId);
-        let statusId = getIdWithLib(status);
-        await createNewUserSubscription(userId,subscriptionId,startDate,statusId,createdAt,nextPaymentDate);
 
         let qrCodeBuffer = await generateQRCode(userId);
         await uploadQrCode(userId,qrCodeBuffer);

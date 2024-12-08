@@ -1,5 +1,8 @@
 import { createMollieClient } from '@mollie/api-client';
-import { handlePaymentWebhookService,getPaymentStatusService } from '../Service/paymentService.js';
+import { handlePaymentWebhookService,getPaymentStatusService,getUserIdByOrderId } from '../Service/paymentService.js';
+import { createNewUserSubscription,getIdWithLib } from '../Service/subscriptionService.js';
+import { createSubscriptionPayments } from '../Utils/mollieUtils.js';
+
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -41,6 +44,13 @@ export const getPaymentStatus = async (req, res) => {
     try {
         const status = await getPaymentStatusService(orderId);
 
+        if(status === 2){
+            let userId = await getUserIdByOrderId(orderId);
+            const { subscriptionId, createdAt, nextPaymentDate, startDate, status } = await createSubscriptionPayments(userId);
+            let statusId = getIdWithLib(status);
+            await createNewUserSubscription(userId,subscriptionId,startDate,statusId,createdAt,nextPaymentDate);
+        }
+
         if (status === null) {return res.status(404).send('Statut de paiement non trouvé');}
 
         return res.status(200).json({ status });
@@ -50,3 +60,4 @@ export const getPaymentStatus = async (req, res) => {
         return res.status(500).send('Erreur serveur');
     }
 };
+
