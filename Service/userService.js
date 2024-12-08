@@ -33,7 +33,7 @@ export const createNewUserService = async (email) => {
         }
 
         const customerId = await createMollieCustomer(email);
-        const [result] = await db.query('INSERT INTO users (u_Email) VALUES (?)', [email]);
+        const [result] = await db.query('INSERT INTO users (u_Email,u_CustomerId) VALUES (?,?)', [email,customerId]);
 
         return {
             success: true,
@@ -83,17 +83,17 @@ const checkIfUserAsPaidWithNoSubscription = async (userId) => {
 const checkIfUserAsPaid = async (userId) => {
     try {
         const [status] = await db.query(`
-            SELECT p_CustomerId
-            FROM payments p
-            INNER JOIN users u ON p.p_UserId = u.u_Id
+            SELECT u_CustomerId
+            FROM users u
+            INNER JOIN payments p ON p.p_UserId = u.u_Id
             WHERE p.p_UserId = ? AND p.p_StatusId = ? 
             AND u.u_FirstName IS NULL AND u.u_LastName IS NULL
         `, [userId, 1]);
 
         if (status.length > 0) {
-            console.log(status[0].p_CustomerId)
+            console.log(status[0].u_CustomerId)
 
-            return status[0].p_CustomerId;
+            return status[0].u_CustomerId;
         }else{
             return null;
         }

@@ -51,14 +51,14 @@ export async function createPayment(orderId, webhookUrl,customerId) {
 export const createSubscriptionPayments = async (userId) => {
     try {
         let [rows] = await db.query(
-            'SELECT p_CustomerId FROM payments WHERE p_UserId = ?',
+            'SELECT u_CustomerId FROM users WHERE u_Id = ?',
             [userId]
         );
         if (rows.length === 0) {
             return null;
         } else {
             const subscription = await mollieClient.customerSubscriptions.create({
-                customerId: rows[0].p_CustomerId,
+                customerId: rows[0].u_CustomerId,
                 amount: { value: '4.80', currency: 'EUR' },
                 times: null,
                 interval: '1 months',

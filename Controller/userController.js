@@ -31,7 +31,7 @@ export const createNewUser = async (req, res) => {
     
             if (paymentUrl && paymentId) {
 
-                await createNewUserPayment(result.userId, paymentId, orderId,result.customerId);
+                await createNewUserPayment(result.userId, paymentId, orderId);
 
                 return res.status(201).json({
                     message: 'Test de paiement réussi, redirigez vers cette URL.',
