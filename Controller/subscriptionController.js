@@ -17,9 +17,9 @@ export const handleSubscriptionWebhook = async (req, res) => {
     try {
         const payment = await mollieClient.payments.get(molliePaymentId);
         const { subscriptionId, customerId } = payment;
-
+        console.log(payment);
         const subscription = await mollieClient.customerSubscriptions.get(subscriptionId, {customerId,});
-
+        console.log("subscription :", subscription);
         const { nextPaymentDate,status } = subscription;
 
         let result = await updateSubscriptionUserService(subscriptionId, status, nextPaymentDate);

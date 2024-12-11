@@ -43,6 +43,7 @@ export async function createPayment(orderId, webhookUrl,customerId) {
         throw error;
     }
 }
+
 /**
  * Permet de crée une subscription une fois le payement effectuer le formulaire remplit
  * @param {*} userId 
@@ -57,6 +58,11 @@ export const createSubscriptionPayments = async (userId) => {
         if (rows.length === 0) {
             return null;
         } else {
+
+            const startSubscrition = new Date();
+            startSubscrition.setMonth(startSubscrition.getMonth() + 1);
+            const isoStartDate = startSubscrition.toISOString().split('T')[0]; 
+
             const subscription = await mollieClient.customerSubscriptions.create({
                 customerId: rows[0].u_CustomerId,
                 amount: { value: '4.80', currency: 'EUR' },
@@ -64,6 +70,7 @@ export const createSubscriptionPayments = async (userId) => {
                 interval: '1 months',
                 description: 'subscription payment',
                 webhookUrl: 'http://180.149.197.7:3000/api/subscription/webhook',
+                startDate: isoStartDate,
             });
           
             const subscriptionId = subscription.id;

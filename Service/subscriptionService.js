@@ -115,3 +115,16 @@ export const checkIfUserHasSubscription = async (userId) => {
         throw new Error('Erreur interne du serveur');
     }
 };
+
+export const checkIfuserHasSubscriptionValid = async (userId) => {
+    try {
+        const [rows] = await db.query(`
+            SELECT * FROM subscriptions WHERE s_UserId = ? AND s_StatusId = 1
+        `, [userId]);
+
+        return rows.length > 0;
+    } catch (error) {
+        console.error('Erreur lors de la vérification si l\'utilisateur a une souscription :', error);
+        throw new Error('Erreur interne du serveur');
+    }
+}

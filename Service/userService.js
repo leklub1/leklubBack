@@ -1,6 +1,6 @@
 import db from '../Config/dbConfig.js';
 import {createMollieCustomer} from '../Utils/mollieUtils.js';
-import { checkIfUserHasSubscription } from './subscriptionService.js'
+import { checkIfUserHasSubscription,checkIfuserHasSubscriptionValid } from './subscriptionService.js'
 import { checkIfUserHasQrCode } from './qrCodeService.js';
 /**
  * permet de créer un nouvel utilisateur dans la table users
@@ -16,16 +16,30 @@ export const createNewUserService = async (email) => {
             let hasSubscription = await checkIfUserHasSubscription(existingUser[0].u_Id);
             if(hasSubscription){
                 // Si l'utilisateur n'as pas de qrcode --> il n'as pas remplit le formulaire
-                let isFormValid = await checkIfUserHasQrCode(existingUser[0].u_Id);
-                if(isFormValid){
-                    return {status: 202};
+
+                    // Vérification si un utilisateur a un abonnement valide
+                let hasSubscriptionValid = await checkIfuserHasSubscriptionValid(existingUser[0].u_Id);
+                if(hasSubscriptionValid){
+                    let isFormValid = await checkIfUserHasQrCode(existingUser[0].u_Id);
+                    if(isFormValid){
+                        return {status: 202};
+                    }else{
+                        return {
+                            status: 200,
+                            paymentUrl: `http://180.149.197.7/redirectForm.html?email=${email}&id=${existingUser[0].u_Id}`, // redirige direct sur le form
+                        };
+                    }
                 }else{
+                    // Si abonnement est plus valide alors redirection vers le payement
+                    let customerId = await getCustomerIdByuserId(existingUser[0].u_Id);
+                    console.log(customerId);
                     return {
-                        status: 200,
-                        // redirige direct sur le form
-                        paymentUrl: `http://180.149.197.7/redirectForm.html?email=${email}&id=${existingUser[0].u_Id}`,
+                        success: true,
+                        userId: existingUser[0].u_Id,
+                        customerId: customerId
                     };
                 }
+
             }else{
                 // Cas ou un utilisateur a un compte mais pas d'abonnement
                 let customerId = await getCustomerIdByuserId(existingUser[0].u_Id);
