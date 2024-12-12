@@ -44,12 +44,12 @@ export const getPaymentStatus = async (req, res) => {
     try {
         const status = await getPaymentStatusService(orderId);
 
-        // if(status === 2){
-        //     let userId = await getUserIdByOrderId(orderId);
-        //     const { subscriptionId, createdAt, nextPaymentDate, startDate, status } = await createSubscriptionPayments(userId);
-        //     let statusId = getIdWithLib(status);
-        //     await createNewUserSubscription(userId,subscriptionId,startDate,statusId,createdAt,nextPaymentDate);
-        // }
+        if(status === 2){
+            let userId = await getUserIdByOrderId(orderId);
+            const { subscriptionId, createdAt, nextPaymentDate, startDate, status } = await createSubscriptionPayments(userId);
+            let statusId = getIdWithLib(status);
+            await createNewUserSubscription(userId,subscriptionId,startDate,statusId,createdAt,nextPaymentDate);
+        }
 
         if (status === null) {return res.status(404).send('Statut de paiement non trouvé');}
 

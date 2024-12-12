@@ -177,3 +177,24 @@ export const getCustomerIdByuserId = async (userId) => {
         throw new Error('Erreur interne du serveur');
     }
 }
+
+export const getAllUsersService = async () => {
+    let [rows] = await db.query(
+        `SELECT 
+            users.u_Email,
+            users.u_CreatedAt,
+            users.u_CustomerId,
+            subscriptions.s_SubscriptionId,
+            subscriptions.s_StatusId,
+            subscriptions.s_NextPaymentDate,
+            subscriptions.s_StartDate,
+            subscriptions.s_EndSubscription
+        FROM 
+            users
+        LEFT JOIN 
+            subscriptions 
+        ON 
+            users.u_Id = subscriptions.s_UserId`);
+
+    return rows;
+};

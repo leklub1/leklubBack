@@ -128,3 +128,17 @@ export const checkIfuserHasSubscriptionValid = async (userId) => {
         throw new Error('Erreur interne du serveur');
     }
 }
+
+export const cancelSubscriptionService = async (subscriptionId) => {
+    try {
+        const [result] = await db.query(
+            'UPDATE subscriptions SET s_EndSubscription = s_NextPaymentDate, s_NextPaymentDate = NULL WHERE s_SubscriptionId = ?',
+            [subscriptionId] 
+        );
+
+        return result.affectedRows > 0;
+    } catch (error) {
+        console.error('Erreur lors de l\'annulation de la souscription :', error); 
+        throw new Error('Erreur interne du serveur');
+    }
+};

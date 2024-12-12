@@ -94,19 +94,37 @@ export const createSubscriptionPayments = async (userId) => {
         throw new Error('Erreur interne du serveur');
     }
 }
-
+/**
+ * Permet de crée un identifiant Mollie
+ * @param {*} email 
+ * @returns 
+ */
 export const createMollieCustomer = async (email) => {
     try {
-        // Crée un client Mollie uniquement avec l'email
         const customer = await mollieClient.customers.create({
-            email: email,  // Email obligatoire
+            email: email,  
         });
 
-        // Retourne l'ID du client Mollie (customerId)
         console.log('Customer created with ID:', customer.id);
         return customer.id;
     } catch (error) {
         console.error('Error creating Mollie customer:', error);
         throw error;
+    }
+};
+/**
+ * Permet d'arreter un abonnement
+ * @param {*} subscriptionId 
+ * @param {*} customerId 
+ */
+export const cancelSubscriptionMollis = async (subscriptionId, customerId) => {
+    try {
+
+        const subscription = await mollieClient.customerSubscriptions.delete(subscriptionId, { customerId });
+        return { success: true, data: subscription };
+        
+    } catch (error) {
+        console.warn('Error cancelling subscription:', error);
+        return { success: false, error };
     }
 };

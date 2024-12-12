@@ -1,4 +1,4 @@
-import { createNewUserService,getDefaultDataService,insertUserDataService,getAllUserDataService,getUserEmailByIdService } from '../Service/userService.js';
+import { createNewUserService,getDefaultDataService,insertUserDataService,getAllUserDataService,getUserEmailByIdService,getAllUsersService } from '../Service/userService.js';
 import { isSubscriptionValid } from '../Service/subscriptionService.js';
 import { createNewUserPayment} from '../Service/paymentService.js';
 import { createPayment } from '../Utils/mollieUtils.js';
@@ -152,3 +152,12 @@ export const getAllUserData = async (req, res) => {
     }
 };
 
+
+export const getAllUsers = async (req, res) => {
+    try {
+        const allUsers = await getAllUsersService();
+        res.status(200).json(allUsers);
+    } catch (error) {
+        res.status(500).json({ error: 'Une erreur s\'est produite lors de la récupération des utilisateurs.' });
+    }
+};
