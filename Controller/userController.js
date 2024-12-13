@@ -128,49 +128,64 @@ export const insertUserData = async (req, res) => {
  */
 export const getAllUserData = async (req, res) => {
     const { token, subId } = req.query;
-    const tokenUrl = token + '_' + subId;
+
+    // Vérification des paramètres requis
     if (!token || !subId) {
-        return res.status(400).send('Token ou SubId manquant');
+        return res.status(400).json({
+            error: 'Requête invalide',
+            message: 'Les paramètres "token" et "subId" sont requis.'
+        });
     }
 
     try {
-
+        const tokenUrl = token + '_' + subId;
         const userId = await getUserIdBySubscriptionIdService(subId);
-        if(userId !== null){
-            let isValidToken = await checkIfValidToken(tokenUrl,userId);
-            if(isValidToken){
-                const userData = await getAllUserDataService(userId);
-        
-                if (!userData) {
-                    return res.status(404).send('Utilisateur non trouvé');
-                }
-        
-                const profilPictureUrl = await getProfilePhotoUrl(userId);
-                const isValidSubscription = await isSubscriptionValidBySubId(subId); 
-                
-                const response = {
-                    ...userData,
-                    profilPictureUrl,
-                    isValidSubscription
-                };
-        
-                return res.status(200).json(response);
-            }else{
-                return res.status(400).send('Abonnement non trouvé');
-            }
-        }else{
-            return res.status(400).send('Erreur lors de la récupération du userID');
+
+        if (userId === null) {
+            return res.status(404).json({
+                error: 'Utilisateur introuvable',
+                message: 'Aucun utilisateur correspondant à cet identifiant d\'abonnement.'
+            });
         }
 
+        const isValidToken = await checkIfValidToken(tokenUrl, userId);
+        if (!isValidToken) {
+            return res.status(403).json({
+                error: 'Accès refusé',
+                message: 'Le token fourni est invalide ou expiré.'
+            });
+        }
 
+        const userData = await getAllUserDataService(userId);
+        if (!userData) {
+            return res.status(404).json({
+                error: 'Données non trouvées',
+                message: 'Aucune donnée utilisateur disponible pour cet identifiant.'
+            });
+        }
+
+        const profilPictureUrl = await getProfilePhotoUrl(userId);
+        const isValidSubscription = await isSubscriptionValidBySubId(subId);
+
+        return res.status(200).json({
+            ...userData,
+            profilPictureUrl,
+            isValidSubscription
+        });
     } catch (error) {
         console.error('Erreur lors de la récupération des données de l\'utilisateur:', error);
 
         if (error.message === 'Erreur interne du serveur') {
-            return res.status(500).send('Erreur serveur');
+            return res.status(500).json({
+                error: 'Erreur serveur',
+                message: 'Une erreur interne s\'est produite. Veuillez réessayer plus tard.'
+            });
         }
 
-        return res.status(500).send('Erreur inconnue');
+        return res.status(500).json({
+            error: 'Erreur inconnue',
+            message: 'Une erreur inattendue s\'est produite. Veuillez réessayer plus tard.'
+        });
     }
 };
 

@@ -1,5 +1,5 @@
 import { createMollieClient } from '@mollie/api-client';
-import { handlePaymentWebhookService,getPaymentStatusService,getUserIdByOrderId } from '../Service/paymentService.js';
+import { handlePaymentWebhookService,getPaymentStatusService,getUserIdByOrderId,getEmailByOrderIdService } from '../Service/paymentService.js';
 import { createNewUserSubscription,getIdWithLib } from '../Service/subscriptionService.js';
 import { createSubscriptionPayments } from '../Utils/mollieUtils.js';
 
@@ -21,6 +21,7 @@ export const handlePaymentWebhook = async (req, res) => {
     try {
         const payment = await mollieClient.payments.get(mollieId);
         console.log("================== PAYEMENT=======================")
+        console.log(payment);
         console.log('MollieId:', mollieId); 
         console.log('Status:', payment.status);  
         console.log("==================================================")
@@ -61,3 +62,23 @@ export const getPaymentStatus = async (req, res) => {
     }
 };
 
+export const getEmailIdByOrderId = async (req, res) => {
+    const { paymentId } = req.query;
+
+    if (!paymentId) {
+        return res.status(400).json({ message: 'Le paramètre paymentId est requis.' });
+    }
+
+    try {
+        const email = await getEmailByOrderIdService(paymentId);
+
+        if (email) {
+            return res.status(200).json({ email });
+        } else {
+            return res.status(404).json({ message: 'Aucun utilisateur trouvé pour ce paymentId.' });
+        }
+    } catch (error) {
+        console.error('Erreur lors du traitement du webhook:', error);
+        return res.status(500).json({ message: 'Erreur interne du serveur.' });
+    }
+};

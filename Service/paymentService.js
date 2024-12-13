@@ -111,3 +111,21 @@ export const getUserIdByOrderId = async (orderId) => {
         throw new Error('Erreur interne du serveur');
     }
 }
+
+export const getEmailByOrderIdService = async (orderId) => {
+    try {
+        let [rows] = await db.query(
+            'SELECT u.u_Email FROM users u INNER JOIN payments p ON u.u_Id = p.p_UserId WHERE p.p_OrderId = ?', 
+            [orderId]
+        );
+
+        if (rows.length > 0) {
+            return rows[0].u_Email;
+        } else {
+            return null;
+        }
+    } catch (error) {
+        console.error(`Erreur lors de la récupération de l'utilisateur pour le paymentId ${orderId} :`, error);
+        throw new Error('Erreur interne du serveur');
+    }
+}
