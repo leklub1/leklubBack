@@ -4,8 +4,8 @@ import { createNewUserPayment} from '../Service/paymentService.js';
 import { createPayment } from '../Utils/mollieUtils.js';
 import { createS3Folders,uploadProfilePhoto,uploadQrCode,getProfilePhotoUrl } from '../Service/s3Service.js'
 import { generateQRCode } from '../Utils/qrCodeUtils.js';
-import { insertQrCodeInDb } from '../Service/qrCodeService.js';
-import { sendEmail } from '../Utils/emailUtils.js'
+import { insertQrCodeInDb,checkIfValidToken } from '../Service/qrCodeService.js';
+import { sendEmail } from '../Utils/emailUtils.js';
 /**
  * permet d'initialiser l'utilisateur et d'initialiser le payement avec mollie
  * @param {*} req 
@@ -128,7 +128,7 @@ export const insertUserData = async (req, res) => {
  */
 export const getAllUserData = async (req, res) => {
     const { token, subId } = req.query;
-
+    const tokenUrl = token + '_' + subId;
     if (!token || !subId) {
         return res.status(400).send('Token ou SubId manquant');
     }
@@ -136,24 +136,28 @@ export const getAllUserData = async (req, res) => {
     try {
 
         const userId = await getUserIdBySubscriptionIdService(subId);
-        console.log("userId",userId)
         if(userId !== null){
-            const userData = await getAllUserDataService(userId);
+            let isValidToken = await checkIfValidToken(tokenUrl,userId);
+            if(isValidToken){
+                const userData = await getAllUserDataService(userId);
         
-            if (!userData) {
-                return res.status(404).send('Utilisateur non trouvé');
+                if (!userData) {
+                    return res.status(404).send('Utilisateur non trouvé');
+                }
+        
+                const profilPictureUrl = await getProfilePhotoUrl(userId);
+                const isValidSubscription = await isSubscriptionValidBySubId(subId); 
+                
+                const response = {
+                    ...userData,
+                    profilPictureUrl,
+                    isValidSubscription
+                };
+        
+                return res.status(200).json(response);
+            }else{
+                return res.status(400).send('Abonnement non trouvé');
             }
-    
-            const profilPictureUrl = await getProfilePhotoUrl(userId);
-            const isValidSubscription = await isSubscriptionValidBySubId(subId); 
-            
-            const response = {
-                ...userData,
-                profilPictureUrl,
-                isValidSubscription
-            };
-    
-            return res.status(200).json(response);
         }else{
             return res.status(400).send('Erreur lors de la récupération du userID');
         }

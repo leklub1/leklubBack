@@ -41,3 +41,23 @@ export const checkIfUserHasQrCode = async (userId) => {
         throw new Error('Erreur interne du serveur');
     }
 }
+/**
+ * Permet de vérifier la validité du token
+ * @param {*} token 
+ * @param {*} userId 
+ * @returns 
+ */
+export const checkIfValidToken = async (token,userId) => {
+    try {
+        const [result] = await db.query(
+            'SELECT * FROM qrcode WHERE q_UserId = ? AND q_Token = ?',
+            [userId,token] 
+        );
+
+        return result.length > 0;
+
+    } catch (error) {
+        console.error('Erreur dans le service de création de l\'abonnement :', error);
+        throw new Error('Erreur interne du serveur');
+    }
+}
