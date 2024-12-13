@@ -119,7 +119,7 @@ export const checkIfUserHasSubscription = async (userId) => {
 export const checkIfuserHasSubscriptionValid = async (userId) => {
     try {
         const [rows] = await db.query(`
-            SELECT * FROM subscriptions WHERE s_UserId = ? AND s_StatusId = 1
+        SELECT * FROM subscriptions WHERE s_UserId = ? AND (s_StatusId = 1 OR s_StatusId = 2)
         `, [userId]);
 
         return rows.length > 0;

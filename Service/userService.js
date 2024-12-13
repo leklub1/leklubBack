@@ -179,22 +179,56 @@ export const getCustomerIdByuserId = async (userId) => {
 }
 
 export const getAllUsersService = async () => {
-    let [rows] = await db.query(
-        `SELECT 
-            users.u_Email,
-            users.u_CreatedAt,
-            users.u_CustomerId,
-            subscriptions.s_SubscriptionId,
-            subscriptions.s_StatusId,
-            subscriptions.s_NextPaymentDate,
-            subscriptions.s_StartDate,
-            subscriptions.s_EndSubscription
-        FROM 
-            users
-        LEFT JOIN 
-            subscriptions 
-        ON 
-            users.u_Id = subscriptions.s_UserId`);
+    try {
+        let [rows] = await db.query(
+            `SELECT 
+                users.u_Email,
+                users.u_CreatedAt,
+                users.u_CustomerId,
+                subscriptions.s_SubscriptionId,
+                subscriptions.s_StatusId,
+                subscriptions.s_NextPaymentDate,
+                subscriptions.s_StartDate,
+                subscriptions.s_EndSubscription
+            FROM 
+                users
+            LEFT JOIN 
+                subscriptions 
+            ON 
+                users.u_Id = subscriptions.s_UserId`);
+    
+        return rows;
+    } catch (error) {
+        throw new Error('Erreur interne du serveur getAllUsersService',error);
+    }
 
-    return rows;
 };
+/**
+ * Permet de récupérer les informations nécessaire pour l'affichage de la fenetre modal de succes
+ * @param {*} userId 
+ */
+export const getUserDataSuccesModalService = async (userId) => {
+    try {
+        let [rows] = await db.query(
+            `SELECT 
+                users.u_FirstName,
+                users.u_lastName,
+                users.u_id,
+                subscriptions.s_NextPaymentDate
+            FROM 
+                users
+            LEFT JOIN 
+                subscriptions 
+            ON 
+                users.u_Id = subscriptions.s_UserId
+            WHERE users.u_id = ?`, [userId]);
+            
+        if (rows.length > 0) {
+            return rows;
+        } else {
+            return null;
+        }
+    } catch (error) {
+        throw new Error(`Erreur interne du serveur dans getUserDataSuccesModalService: ${error.message}`);
+    }
+}

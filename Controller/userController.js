@@ -1,4 +1,4 @@
-import { createNewUserService,getDefaultDataService,insertUserDataService,getAllUserDataService,getUserEmailByIdService,getAllUsersService } from '../Service/userService.js';
+import { createNewUserService,getDefaultDataService,insertUserDataService,getAllUserDataService,getUserEmailByIdService,getAllUsersService,getUserDataSuccesModalService } from '../Service/userService.js';
 import { isSubscriptionValid } from '../Service/subscriptionService.js';
 import { createNewUserPayment} from '../Service/paymentService.js';
 import { createPayment } from '../Utils/mollieUtils.js';
@@ -103,7 +103,13 @@ export const insertUserData = async (req, res) => {
             await sendEmail(userEmail,'Merci pour votre achat','Vous retrouverez votre qr code en piece jointe',attachments);
         }
 
-        return res.status(200).json(statement); 
+        let userData = await getUserDataSuccesModalService(userId);
+        if(userData !== null){
+            return res.status(200).json(userData); 
+        }else{
+            return res.status(500).json(null); 
+        }
+
     } catch (error) {
         console.error('Erreur lors de la mise à jour des données utilisateur:', error);
         return res.status(500).json(false); 
