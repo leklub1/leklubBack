@@ -6,11 +6,11 @@ import db from '../Config/dbConfig.js';
  * @param {Int} paymentId 
  * @returns {Object}
  */
-export const insertQrCodeInDb = async (userId) => {
+export const insertQrCodeInDb = async (userId,token) => {
     try {
         const [result] = await db.query(
-            'INSERT INTO qrcode (q_UserId) VALUES (?)',
-            [userId] 
+            'INSERT INTO qrcode (q_UserId,q_Token) VALUES (?,?)',
+            [userId,token] 
         );
 
         return {

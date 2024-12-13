@@ -1,5 +1,5 @@
 import { createNewUserService,getDefaultDataService,insertUserDataService,getAllUserDataService,getUserEmailByIdService,getAllUsersService,getUserDataSuccesModalService } from '../Service/userService.js';
-import { isSubscriptionValid } from '../Service/subscriptionService.js';
+import { isSubscriptionValidBySubId,getSubscriptionActuallyByUserService,getUserIdBySubscriptionIdService } from '../Service/subscriptionService.js';
 import { createNewUserPayment} from '../Service/paymentService.js';
 import { createPayment } from '../Utils/mollieUtils.js';
 import { createS3Folders,uploadProfilePhoto,uploadQrCode,getProfilePhotoUrl } from '../Service/s3Service.js'
@@ -87,29 +87,34 @@ export const insertUserData = async (req, res) => {
         await createS3Folders(userId);
         await uploadProfilePhoto(userId,file);
 
-        let qrCodeBuffer = await generateQRCode(userId);
-        await uploadQrCode(userId,qrCodeBuffer);
-        await insertQrCodeInDb(userId);
-
-        let userEmail = await getUserEmailByIdService(userId);
-        if(userEmail !== null){
-            const attachments = [
-                {
-                    filename: 'qrcode.png',        
-                    content: qrCodeBuffer,         
-                    contentType: 'image/png'       
-                }
-            ];
-            await sendEmail(userEmail,'Merci pour votre achat','Vous retrouverez votre qr code en piece jointe',attachments);
-        }
-
-        let userData = await getUserDataSuccesModalService(userId);
-        if(userData !== null){
-            return res.status(200).json(userData); 
+        let subId = await getSubscriptionActuallyByUserService(userId);
+        
+        if(subId !== null){
+            let { buffer: qrCodeBuffer, finalToken } = await generateQRCode(subId);
+            await uploadQrCode(userId,qrCodeBuffer);
+            await insertQrCodeInDb(userId,finalToken);
+    
+            let userEmail = await getUserEmailByIdService(userId);
+            if(userEmail !== null){
+                const attachments = [
+                    {
+                        filename: 'qrcode.png',        
+                        content: qrCodeBuffer,         
+                        contentType: 'image/png'       
+                    }
+                ];
+                await sendEmail(userEmail,'Merci pour votre achat','Vous retrouverez votre qr code en piece jointe',attachments);
+            }
+            let userData = await getUserDataSuccesModalService(userId);
+            if(userData !== null){
+                return res.status(200).json(userData); 
+            }else{
+                return res.status(500).json(null); 
+            }
         }else{
-            return res.status(500).json(null); 
-        }
+            return res.status(400).json("Erreur est survenu lors de la récupération de l'id de subscription"); 
 
+        }
     } catch (error) {
         console.error('Erreur lors de la mise à jour des données utilisateur:', error);
         return res.status(500).json(false); 
@@ -122,30 +127,37 @@ export const insertUserData = async (req, res) => {
  * @returns 
  */
 export const getAllUserData = async (req, res) => {
-    const { userId } = req.query;
+    const { token, subId } = req.query;
 
-    if (!userId) {
-        return res.status(400).send('User ID manquant');
+    if (!token || !subId) {
+        return res.status(400).send('Token ou SubId manquant');
     }
 
     try {
 
-        const userData = await getAllUserDataService(userId);
+        const userId = await getUserIdBySubscriptionIdService(subId);
+        console.log("userId",userId)
+        if(userId !== null){
+            const userData = await getAllUserDataService(userId);
         
-        if (!userData) {
-            return res.status(404).send('Utilisateur non trouvé');
+            if (!userData) {
+                return res.status(404).send('Utilisateur non trouvé');
+            }
+    
+            const profilPictureUrl = await getProfilePhotoUrl(userId);
+            const isValidSubscription = await isSubscriptionValidBySubId(subId); 
+            
+            const response = {
+                ...userData,
+                profilPictureUrl,
+                isValidSubscription
+            };
+    
+            return res.status(200).json(response);
+        }else{
+            return res.status(400).send('Erreur lors de la récupération du userID');
         }
 
-        const profilPictureUrl = await getProfilePhotoUrl(userId);
-        const isValidSubscription = await isSubscriptionValid(userId); 
-        
-        const response = {
-            ...userData,
-            profilPictureUrl,
-            isValidSubscription
-        };
-
-        return res.status(200).json(response);
 
     } catch (error) {
         console.error('Erreur lors de la récupération des données de l\'utilisateur:', error);

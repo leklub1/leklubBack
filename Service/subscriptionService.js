@@ -74,18 +74,18 @@ export const updateSubscriptionUserService = async (subscriptionId, status, next
 };
 /**
  * Permet de vérifier si un abonnement est valide
- * @param {*} userId 
+ * @param {*} subId 
  * @returns 
  */
-export const isSubscriptionValid = async (userId) => {
+export const isSubscriptionValidBySubId = async (subId) => {
     try {
         const [rows] = await db.query(
-            'SELECT s_StatusId FROM subscriptions WHERE s_UserId = ? LIMIT 1',
-            [userId]
+            'SELECT s_StatusId FROM subscriptions WHERE s_SubscriptionId = ? LIMIT 1',
+            [subId]
         );
 
         if (rows.length === 0) {
-            console.warn(`Aucune subscription trouvée pour l'utilisateur avec l'ID ${userId}`);
+            console.warn(`Aucune subscription trouvée pour l'utilisateur avec l'ID ${subId}`);
             return false;
         }
 
@@ -142,3 +142,45 @@ export const cancelSubscriptionService = async (subscriptionId) => {
         throw new Error('Erreur interne du serveur');
     }
 };
+/**
+ * Permet de récupérer la subscription active
+ * @param {*} userId 
+ * @returns 
+ */
+export const getSubscriptionActuallyByUserService = async (userId) => {
+    try {
+        const [rows] = await db.query(`
+        SELECT s_SubscriptionId FROM subscriptions WHERE s_UserId = ? AND (s_StatusId = 1 OR s_StatusId = 2)
+        `, [userId]);
+
+        if(rows.length > 0){
+            return rows[0].s_SubscriptionId;
+        }else{
+            return null
+        }
+    } catch (error) {
+        console.error('Erreur lors de la vérification si l\'utilisateur a une souscription :', error);
+        throw new Error('Erreur interne du serveur');
+    }
+}
+/**
+ * Permet de récupérer l'id de l'utilisateur par rapport a son subID
+ * @param {*} subId 
+ * @returns 
+ */
+export const getUserIdBySubscriptionIdService = async (subId) => {
+    try {
+        const [rows] = await db.query(`
+        SELECT s_UserId FROM subscriptions WHERE s_SubscriptionId = ?
+        `, [subId]);
+
+        if(rows.length > 0){
+            return rows[0].s_UserId;
+        }else{
+            return null
+        }
+    } catch (error) {
+        console.error('Erreur lors de la vérification si l\'utilisateur a une souscription :', error);
+        throw new Error('Erreur interne du serveur');
+    }
+}
