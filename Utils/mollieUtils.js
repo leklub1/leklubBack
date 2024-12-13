@@ -60,9 +60,8 @@ export const createSubscriptionPayments = async (userId) => {
         } else {
 
             const startSubscrition = new Date();
-            startSubscrition.setMonth(startSubscrition.getMonth() + 1);
             const isoStartDate = startSubscrition.toISOString().split('T')[0]; 
-
+            
             const subscription = await mollieClient.customerSubscriptions.create({
                 customerId: rows[0].u_CustomerId,
                 amount: { value: '4.80', currency: 'EUR' },
@@ -72,6 +71,7 @@ export const createSubscriptionPayments = async (userId) => {
                 webhookUrl: 'http://180.149.197.7:3000/api/subscription/webhook',
                 startDate: isoStartDate,
             });
+            
           
             const subscriptionId = subscription.id;
             const createdAt = subscription.createdAt;

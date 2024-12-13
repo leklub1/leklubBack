@@ -115,7 +115,11 @@ export const checkIfUserHasSubscription = async (userId) => {
         throw new Error('Erreur interne du serveur');
     }
 };
-
+/**
+ * Permet de vérifier si un utilisateur à un abonnement valide
+ * @param {*} userId 
+ * @returns 
+ */
 export const checkIfuserHasSubscriptionValid = async (userId) => {
     try {
         const [rows] = await db.query(`
@@ -128,7 +132,11 @@ export const checkIfuserHasSubscriptionValid = async (userId) => {
         throw new Error('Erreur interne du serveur');
     }
 }
-
+/**
+ * Permet de mettre a jour quand le bouton stopper est cliquer sur le dashboard
+ * @param {*} subscriptionId 
+ * @returns 
+ */
 export const cancelSubscriptionService = async (subscriptionId) => {
     try {
         const [result] = await db.query(

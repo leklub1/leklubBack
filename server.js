@@ -4,6 +4,7 @@ import subscriptionRoutes from './Router/subscriptionRoutes.js'
 import express from 'express';
 import cors from 'cors';
 import bodyParser from 'body-parser';
+import { initCronJobs } from './cron/index.js';
 
 const app = express();
 app.use(cors());
@@ -27,3 +28,5 @@ app.get('/test', (req, res) => {
 app.listen(PORT, () => {
     console.log(`Serveur démarré sur http://localhost:${PORT}`);
 });
+
+initCronJobs();

@@ -103,7 +103,7 @@ export const insertUserData = async (req, res) => {
                         contentType: 'image/png'       
                     }
                 ];
-                await sendEmail(userEmail,'Merci pour votre achat','Vous retrouverez votre qr code en piece jointe',attachments);
+                await sendEmail(userEmail,firstName,lastName,attachments);
             }
             let userData = await getUserDataSuccesModalService(userId);
             if(userData !== null){
