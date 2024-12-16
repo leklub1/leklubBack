@@ -2,6 +2,7 @@ import db from '../Config/dbConfig.js';
 import {createMollieCustomer} from '../Utils/mollieUtils.js';
 import { checkIfUserHasSubscription,checkIfuserHasSubscriptionValid } from './subscriptionService.js'
 import { checkIfUserHasQrCode } from './qrCodeService.js';
+import { getProfilePhotoUrl } from './s3Service.js';
 /**
  * permet de créer un nouvel utilisateur dans la table users
  * @param {String} email 
@@ -232,3 +233,35 @@ export const getUserDataSuccesModalService = async (userId) => {
         throw new Error(`Erreur interne du serveur dans getUserDataSuccesModalService: ${error.message}`);
     }
 }
+/**
+ * permet d'avoir les informations de mail - tel - nom - prenom quand un utilisateur a un deja souscrit à un abonnement
+ * @param {*} userId 
+ * @returns 
+ */
+export const getAdvancedDataService = async (userId) => {
+    try {
+
+        let [rows] = await db.query(
+            'SELECT users.u_Email, users.u_FirstName, users.u_LastName, users.u_Phone, subscriptions.s_NextPaymentDate ' +
+            'FROM users ' +
+            'INNER JOIN subscriptions ON subscriptions.s_UserId = users.u_Id ' +
+            'WHERE users.u_Id = ? AND subscriptions.s_StatusId = 1',
+            [userId]
+        );
+        
+
+        let profilPictureUrl = await getProfilePhotoUrl(userId);
+
+        if (rows.length === 0) {
+            return null;
+        } else {
+            return {
+                userData: rows[0],
+                profilePictureUrl: profilPictureUrl,
+            };
+        }
+    } catch (error) {
+        console.error(`Erreur lors de la récupération des informations de l'utilisateur ${userId} :`, error);
+        throw new Error('Erreur interne du serveur');
+    }
+};

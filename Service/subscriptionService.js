@@ -192,3 +192,21 @@ export const getUserIdBySubscriptionIdService = async (subId) => {
         throw new Error('Erreur interne du serveur');
     }
 }
+/**
+ * Permet de voir le nombre total d'abonnement qu'il a eu 
+ */
+export const checkIfUseHasAlreadyHadSubscription = async (userId) => {
+    console.log(userId)
+    try {
+        const [rows] = await db.query(`
+            SELECT COUNT(*) AS count 
+            FROM subscriptions 
+            WHERE s_UserId = ?
+        `, [userId]);
+
+        return rows[0].count > 1;
+    } catch (error) {
+        console.error('Erreur lors de la vérification si l\'utilisateur a une souscription :', error);
+        throw new Error('Erreur interne du serveur');
+    }
+}

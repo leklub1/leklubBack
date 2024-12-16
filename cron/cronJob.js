@@ -16,7 +16,7 @@ export const disableSubscriptionCronService = async () => {
         const [result] = await db.query(
             `UPDATE subscriptions 
              SET s_StatusId = 4 
-             WHERE s_SubscriptionId IS NOT NULL 
+             WHERE s_EndSubscription IS NOT NULL AND s_StatusId = 1
                AND DATE(s_EndSubscription) = ?`,
             [todayDateString]
         );

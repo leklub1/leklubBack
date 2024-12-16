@@ -1,5 +1,5 @@
-import { createNewUserService,getDefaultDataService,insertUserDataService,getAllUserDataService,getUserEmailByIdService,getAllUsersService,getUserDataSuccesModalService } from '../Service/userService.js';
-import { isSubscriptionValidBySubId,getSubscriptionActuallyByUserService,getUserIdBySubscriptionIdService } from '../Service/subscriptionService.js';
+import { createNewUserService,getDefaultDataService,insertUserDataService,getAllUserDataService,getUserEmailByIdService,getAllUsersService,getUserDataSuccesModalService,getAdvancedDataService } from '../Service/userService.js';
+import { isSubscriptionValidBySubId,getSubscriptionActuallyByUserService,getUserIdBySubscriptionIdService,checkIfUseHasAlreadyHadSubscription } from '../Service/subscriptionService.js';
 import { createNewUserPayment} from '../Service/paymentService.js';
 import { createPayment } from '../Utils/mollieUtils.js';
 import { createS3Folders,uploadProfilePhoto,uploadQrCode,getProfilePhotoUrl } from '../Service/s3Service.js'
@@ -66,10 +66,15 @@ export const getDefaultData = async (req, res) => {
     try {
 
         const userData = await getDefaultDataService(orderId);
-
+        console.log(userData)
+        const isAlreadySubscribed = await checkIfUseHasAlreadyHadSubscription(userData.id);
+        console.log(isAlreadySubscribed)
         if (userData === null) {return res.status(404).send('Aucun utilisateur trouvé pour ce orderId');}
 
-        return res.status(200).json(userData);
+        return res.status(200).json({
+            userData,
+            isAlreadySubscribed
+        });
 
     } catch (error) {
         console.error('Erreur lors de la récupération des données utilisateur:', error);
@@ -85,7 +90,9 @@ export const insertUserData = async (req, res) => {
         const statement = await insertUserDataService(firstName, lastName, email, phone, userId);
 
         await createS3Folders(userId);
-        await uploadProfilePhoto(userId,file);
+        if(file !== null){
+            await uploadProfilePhoto(userId,file);
+        }
 
         let subId = await getSubscriptionActuallyByUserService(userId);
         
@@ -196,5 +203,26 @@ export const getAllUsers = async (req, res) => {
         res.status(200).json(allUsers);
     } catch (error) {
         res.status(500).json({ error: 'Une erreur s\'est produite lors de la récupération des utilisateurs.' });
+    }
+};
+
+export const getAdvancedData = async (req,res) => {
+    const { userId } = req.query;
+
+    if (!userId) {
+        return res.status(400).json({ error: 'userId est requis dans la requête.' });
+    }
+
+    try {
+        const userData = await getAdvancedDataService(userId);
+        console.log(userData)
+        if (!userData) {
+            return res.status(404).json({ error: 'Utilisateur introuvable.' });
+        }
+
+        res.status(200).json(userData);
+    } catch (error) {
+        console.error('Erreur lors de la récupération des informations utilisateur:', error);
+        res.status(500).json({ error: 'Une erreur s\'est produite lors de la récupération des informations utilisateur.' });
     }
 };
