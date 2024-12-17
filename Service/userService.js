@@ -1,6 +1,7 @@
+
 import db from '../Config/dbConfig.js';
 import {createMollieCustomer} from '../Utils/mollieUtils.js';
-import { checkIfUserHasSubscription,checkIfuserHasSubscriptionValid } from './subscriptionService.js'
+import { checkIfUserHasSubscription,checkIfuserHasSubscriptionValid,checkIfSubscriptionIsValidService } from './subscriptionService.js'
 import { checkIfUserHasQrCode } from './qrCodeService.js';
 import { getProfilePhotoUrl } from './s3Service.js';
 /**
@@ -16,12 +17,12 @@ export const createNewUserService = async (email) => {
 
             let hasSubscription = await checkIfUserHasSubscription(existingUser[0].u_Id);
             if(hasSubscription){
-                // Si l'utilisateur n'as pas de qrcode --> il n'as pas remplit le formulaire
 
-                    // Vérification si un utilisateur a un abonnement valide
                 let hasSubscriptionValid = await checkIfuserHasSubscriptionValid(existingUser[0].u_Id);
                 if(hasSubscriptionValid){
-                    let isFormValid = await checkIfUserHasQrCode(existingUser[0].u_Id);
+
+                    let isFormValid = await checkIfSubscriptionIsValidService(existingUser[0].u_Id);
+                    console.log(isFormValid)
                     if(isFormValid){
                         return {status: 202};
                     }else{
@@ -31,7 +32,7 @@ export const createNewUserService = async (email) => {
                         };
                     }
                 }else{
-                    // Si abonnement est plus valide alors redirection vers le payement
+
                     let customerId = await getCustomerIdByuserId(existingUser[0].u_Id);
                     console.log(customerId);
                     return {
@@ -66,6 +67,7 @@ export const createNewUserService = async (email) => {
         throw new Error('Erreur interne du serveur');
     }
 };
+
 
 /**
  * Service qui permet d'avoir les infos de base => mail + id

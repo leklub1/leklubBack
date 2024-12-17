@@ -1,5 +1,5 @@
 import { createNewUserService,getDefaultDataService,insertUserDataService,getAllUserDataService,getUserEmailByIdService,getAllUsersService,getUserDataSuccesModalService,getAdvancedDataService } from '../Service/userService.js';
-import { isSubscriptionValidBySubId,getSubscriptionActuallyByUserService,getUserIdBySubscriptionIdService,checkIfUseHasAlreadyHadSubscription } from '../Service/subscriptionService.js';
+import { isSubscriptionValidBySubId,getSubscriptionActuallyByUserService,getUserIdBySubscriptionIdService,checkIfUseHasAlreadyHadSubscription,updateValidSubscription } from '../Service/subscriptionService.js';
 import { createNewUserPayment} from '../Service/paymentService.js';
 import { createPayment } from '../Utils/mollieUtils.js';
 import { createS3Folders,uploadProfilePhoto,uploadQrCode,getProfilePhotoUrl } from '../Service/s3Service.js'
@@ -95,28 +95,34 @@ export const insertUserData = async (req, res) => {
         }
 
         let subId = await getSubscriptionActuallyByUserService(userId);
-        
+
         if(subId !== null){
-            let { buffer: qrCodeBuffer, finalToken } = await generateQRCode(subId);
-            await uploadQrCode(userId,qrCodeBuffer);
-            await insertQrCodeInDb(userId,finalToken);
-    
-            let userEmail = await getUserEmailByIdService(userId);
-            if(userEmail !== null){
-                const attachments = [
-                    {
-                        filename: 'qrcode.png',        
-                        content: qrCodeBuffer,         
-                        contentType: 'image/png'       
-                    }
-                ];
-                await sendEmail(userEmail,firstName,lastName,attachments);
-            }
-            let userData = await getUserDataSuccesModalService(userId);
-            if(userData !== null){
-                return res.status(200).json(userData); 
+            let updateStatusSubscription = await updateValidSubscription(subId);
+            if(updateStatusSubscription){
+                let { buffer: qrCodeBuffer, finalToken } = await generateQRCode(subId);
+                await uploadQrCode(userId,qrCodeBuffer);
+                await insertQrCodeInDb(userId,finalToken);
+        
+                let userEmail = await getUserEmailByIdService(userId);
+                if(userEmail !== null){
+                    const attachments = [
+                        {
+                            filename: 'qrcode.png',        
+                            content: qrCodeBuffer,         
+                            contentType: 'image/png'       
+                        }
+                    ];
+                    await sendEmail(userEmail,firstName,lastName,attachments);
+                }
+                let userData = await getUserDataSuccesModalService(userId);
+                if(userData !== null){
+                    return res.status(200).json(userData); 
+                }else{
+                    return res.status(500).json(null); 
+                }
             }else{
-                return res.status(500).json(null); 
+                return res.status(400).json("Erreur est survenu lors de la récupération de l'id de subscription"); 
+
             }
         }else{
             return res.status(400).json("Erreur est survenu lors de la récupération de l'id de subscription"); 

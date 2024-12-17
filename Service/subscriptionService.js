@@ -123,7 +123,7 @@ export const checkIfUserHasSubscription = async (userId) => {
 export const checkIfuserHasSubscriptionValid = async (userId) => {
     try {
         const [rows] = await db.query(`
-        SELECT * FROM subscriptions WHERE s_UserId = ? AND (s_StatusId = 1 OR s_StatusId = 2)
+        SELECT * FROM subscriptions WHERE s_UserId = ? AND s_StatusId = 1 
         `, [userId]);
 
         return rows.length > 0;
@@ -196,7 +196,6 @@ export const getUserIdBySubscriptionIdService = async (subId) => {
  * Permet de voir le nombre total d'abonnement qu'il a eu 
  */
 export const checkIfUseHasAlreadyHadSubscription = async (userId) => {
-    console.log(userId)
     try {
         const [rows] = await db.query(`
             SELECT COUNT(*) AS count 
@@ -210,3 +209,51 @@ export const checkIfUseHasAlreadyHadSubscription = async (userId) => {
         throw new Error('Erreur interne du serveur');
     }
 }
+
+export const updateValidSubscription = async (subId) => {
+    try {
+        const [result] = await db.query(
+            'UPDATE subscriptions SET s_IsValid = 1 WHERE s_SubscriptionId = ?',
+            [subId] 
+        );
+
+        return result.affectedRows > 0;
+    } catch (error) {
+        console.error('Erreur lors de l\'annulation de la souscription :', error); 
+        throw new Error('Erreur interne du serveur');
+    }
+}
+/**
+ * Permet de voir si les données on était rentrer afin de valider l'abonnement
+ * @param {*} userId 
+ * @returns 
+ */
+export const checkIfSubscriptionIsValidService = async (userId) => {
+    try {
+        console.log(userId)
+        if (!userId) {
+            throw new Error("L'ID de l'utilisateur est requis.");
+        }
+
+        const [rows] = await db.query(
+            `
+            SELECT s_IsValid
+            FROM subscriptions 
+            WHERE s_UserId = ?
+              AND s_StatusId = 1
+            LIMIT 1
+            `,
+            [userId]
+        );
+
+        if (rows.length > 0) {
+            return !!rows[0].s_IsValid;
+       }else{
+            return false; 
+        }
+
+    } catch (error) {
+        console.error("Erreur lors de la vérification de l'abonnement :", error.message);
+        throw new Error("Erreur interne du serveur.");
+    }
+};

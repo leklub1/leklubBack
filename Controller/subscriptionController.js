@@ -1,6 +1,6 @@
 import { createMollieClient } from '@mollie/api-client';
 import dotenv from 'dotenv';
-import {updateSubscriptionUserService,cancelSubscriptionService} from '../Service/subscriptionService.js';
+import {updateSubscriptionUserService,cancelSubscriptionService,checkIfUseHasAlreadyHadSubscription} from '../Service/subscriptionService.js';
 import {cancelSubscriptionMollis} from '../Utils/mollieUtils.js';
 
 dotenv.config();
@@ -59,4 +59,19 @@ export const cancelSubscription = async (req, res) => {
     }
 };
 
+export const checkIfUserHasAlreadySubscribed = async (req, res) => {
+    try {
+        const { userId } = req.query;
 
+        if (!userId) {
+            return res.status(400).json({ message: "L'ID de l'utilisateur est requis." });
+        }
+
+        const result = await checkIfUseHasAlreadyHadSubscription(userId);
+
+        return res.status(200).json(result);
+    } catch (error) {
+        console.error("Erreur dans le contrôleur :", error.message);
+        return res.status(500).json({ message: "Erreur interne du serveur." });
+    }
+};
