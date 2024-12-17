@@ -1,11 +1,11 @@
-import { createNewUserService,getDefaultDataService,insertUserDataService,getAllUserDataService,getUserEmailByIdService,getAllUsersService,getUserDataSuccesModalService,getAdvancedDataService,getUserNameByEmailService } from '../Service/userService.js';
+import { createNewUserService,getDefaultDataService,insertUserDataService,getAllUserDataService,getUserEmailByIdService,getAllUsersService,getUserDataSuccesModalService,getAdvancedDataService,getUserNameByEmailService,getUserIdByEmail } from '../Service/userService.js';
 import { isSubscriptionValidBySubId,getSubscriptionActuallyByUserService,getUserIdBySubscriptionIdService,checkIfUseHasAlreadyHadSubscription,updateValidSubscription } from '../Service/subscriptionService.js';
 import { createNewUserPayment} from '../Service/paymentService.js';
 import { createPayment } from '../Utils/mollieUtils.js';
-import { createS3Folders,uploadProfilePhoto,uploadQrCode,getProfilePhotoUrl } from '../Service/s3Service.js'
+import { createS3Folders,uploadProfilePhoto,uploadQrCode,getProfilePhotoUrl,getQrCodeImage } from '../Service/s3Service.js'
 import { generateQRCode } from '../Utils/qrCodeUtils.js';
 import { insertQrCodeInDb,checkIfValidToken } from '../Service/qrCodeService.js';
-import { sendEmail } from '../Utils/emailUtils.js';
+import { sendEmail,sendQrCodeEmail } from '../Utils/emailUtils.js';
 /**
  * permet d'initialiser l'utilisateur et d'initialiser le payement avec mollie
  * @param {*} req 
@@ -253,3 +253,36 @@ export const getUserNameByEmail = async (req,res) => {
         res.status(500).json({ error: 'Une erreur s\'est produite lors de la récupération des informations utilisateur.' });
     }
 }
+
+export const reSendQrCode = async (req, res) => {
+    const { email } = req.body;
+
+    try {
+
+        if (!email) {
+            return res.status(400).json({ message: "L'email est requis." });
+        }
+
+        const userId = await getUserIdByEmail(email);
+        if (!userId) {
+            return res.status(404).json({ message: "Utilisateur non trouvé pour cet email." });
+        }
+
+        const userName = await getUserNameByEmailService(email);
+        if (!userName || !userName.u_FirstName || !userName.u_LastName) {
+            return res.status(500).json({ message: "Erreur lors de la récupération des informations utilisateur." });
+        }
+
+        const qrCodeImage = await getQrCodeImage(userId);
+        if (!qrCodeImage) {
+            return res.status(500).json({ message: "Impossible de récupérer l'image du QR code." });
+        }
+        console.log(qrCodeImage)
+        await sendQrCodeEmail(email, userName.u_FirstName, userName.u_LastName, qrCodeImage);
+
+        return res.status(200).json({ message: "QR code envoyé avec succès." });
+    } catch (error) {
+        console.error("Erreur dans reSendQrCode:", error.message);
+        return res.status(500).json({ message: "Une erreur interne s'est produite.", error: error.message });
+    }
+};

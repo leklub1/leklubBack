@@ -105,3 +105,27 @@ export const getProfilePhotoUrl = async (userId, expiresIn = 3600) => {
         throw new Error('Erreur lors de la génération de l\'URL signée');
     }
 };
+
+export const getQrCodeImage = async (userId) => {
+    try {
+
+        const photoParams = {
+            Bucket: process.env.AWS_BUCKET_NAME,
+            Key: `users/${userId}/qrCode/qrCode.png`,
+        };
+
+        const command = new GetObjectCommand(photoParams);
+        const response = await s3Client.send(command);
+
+        const chunks = [];
+        for await (const chunk of response.Body) {
+            chunks.push(chunk);
+        }
+        const imageBuffer = Buffer.concat(chunks);
+
+        return imageBuffer;
+    } catch (error) {
+        console.error("Erreur lors de la récupération de l'image depuis S3:", error);
+        throw new Error("Erreur lors de la récupération de l'image");
+    }
+};

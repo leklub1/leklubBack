@@ -2,7 +2,6 @@
 import db from '../Config/dbConfig.js';
 import {createMollieCustomer} from '../Utils/mollieUtils.js';
 import { checkIfUserHasSubscription,checkIfuserHasSubscriptionValid,checkIfSubscriptionIsValidService } from './subscriptionService.js'
-import { checkIfUserHasQrCode } from './qrCodeService.js';
 import { getProfilePhotoUrl } from './s3Service.js';
 /**
  * permet de créer un nouvel utilisateur dans la table users
@@ -281,6 +280,25 @@ export const getUserNameByEmailService = async (email) => {
         } else {
 
             return rows[0];
+        }
+    } catch (error) {
+        console.error(`Erreur lors de la récupération des informations de l'utilisateur ${email} :`, error);
+        throw new Error('Erreur interne du serveur');
+    }
+}
+
+export const getUserIdByEmail = async (email) => {
+    try {
+        console.log(email)
+        let [rows] = await db.query(
+            'SELECT u_Id FROM users WHERE u_Email = ?',
+            [email] 
+        );
+
+        if (rows.length === 0) {
+            return null;
+        } else {
+            return rows[0].u_Id;
         }
     } catch (error) {
         console.error(`Erreur lors de la récupération des informations de l'utilisateur ${email} :`, error);

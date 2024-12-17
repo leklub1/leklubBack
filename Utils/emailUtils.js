@@ -9,10 +9,9 @@ import transporter from '../Config/mailConfig.js';
  * @param {Array} attachments - (Optionnel) Liste des pièces jointes.
  */
 export const sendEmail = async (to, firstName, lastName, attachments = []) => {
-    // Sujet de l'email
+
     const subject = `Bienvenue chez LeKlub, ${firstName} ${lastName} !`;
 
-    // Contenu HTML de l'email
     const htmlBody = `
         <p>Bonjour ${firstName} ${lastName},</p>
         <p>Merci d'avoir rejoint <strong>LeKlub</strong> ! Nous sommes ravis de vous compter parmi nos membres.</p>
@@ -50,5 +49,57 @@ export const sendEmail = async (to, firstName, lastName, attachments = []) => {
     }
 };
 
+/**
+ * Envoie un email de bienvenue aux nouveaux membres de LeKlub.
+ *
+ * @param {string} to - Adresse email du destinataire.
+ * @param {string} firstName - Prénom du destinataire.
+ * @param {string} lastName - Nom de famille du destinataire.
+ * @param {Array} attachments - (Optionnel) Liste des pièces jointes.
+ */
+export const sendQrCodeEmail = async (to, firstName, lastName, qrCodeImage) => {
+
+    const subject = `QR Code LeKlub, ${firstName} ${lastName} !`;
+
+    const htmlBody = `
+    <p>Bonjour <strong>${firstName} ${lastName}</strong>,</p>
+
+    <p>Nous avons le plaisir de vous transmettre votre <strong>QR Code personnel</strong>. Celui-ci vous permettra d'accéder facilement à nos services et avantages exclusifs.</p>
+
+    <p>Veuillez trouver votre QR Code en pièce jointe de cet email.</p>
+
+    <p>En cas de besoin ou pour toute question, n'hésitez pas à nous contacter par email à <a href="mailto:info@leklubtoulouse.com">info@leklubtoulouse.com</a>. Nous sommes toujours disponibles pour vous accompagner.</p>
+
+    <p>Merci de faire partie de l'aventure <strong>LeKlub</strong> !</p>
+
+    <p>Cordialement,<br>
+    <strong>L'équipe LeKlub</strong></p>
+`;
+
+
+    const attachments = [
+        {
+            filename: 'qrcode.png', 
+            content: qrCodeImage, 
+            encoding: 'base64',    
+        },
+    ];
+
+    const mailOptions = {
+        from: process.env.EMAIL_USER,
+        to,
+        subject,
+        html: htmlBody,
+        attachments, // Passer l'objet d'attachement ici
+    };
+
+    try {
+        const info = await transporter.sendMail(mailOptions);
+        console.log('Email envoyé avec succès:', info.response);
+    } catch (error) {
+        console.error('Erreur lors de l\'envoi de l\'email:', error);
+        throw error;
+    }
+};
 
 export default sendEmail;

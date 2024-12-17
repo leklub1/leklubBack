@@ -23,25 +23,6 @@ export const insertQrCodeInDb = async (userId,token) => {
     }
 };
 /**
- * Permet de vérifier un utilisateur à un qrCode
- * @param {*} userId 
- * @returns 
- */
-export const checkIfUserHasQrCode = async (userId) => {
-    try {
-        const [result] = await db.query(
-            'SELECT * FROM qrcode WHERE q_UserId = ?',
-            [userId] 
-        );
-
-        return result.length > 0;
-
-    } catch (error) {
-        console.error('Erreur dans le service de création de l\'abonnement :', error);
-        throw new Error('Erreur interne du serveur');
-    }
-}
-/**
  * Permet de vérifier la validité du token
  * @param {*} token 
  * @param {*} userId 
