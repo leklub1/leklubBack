@@ -267,3 +267,23 @@ export const getAdvancedDataService = async (userId) => {
         throw new Error('Erreur interne du serveur');
     }
 };
+
+export const getUserNameByEmailService = async (email) => {
+    try {
+        console.log(email)
+        let [rows] = await db.query(
+            'SELECT u_FirstName, u_LastName FROM users WHERE u_Email = ?',
+            [email] 
+        );
+
+        if (rows.length === 0) {
+            return null;
+        } else {
+
+            return rows[0];
+        }
+    } catch (error) {
+        console.error(`Erreur lors de la récupération des informations de l'utilisateur ${email} :`, error);
+        throw new Error('Erreur interne du serveur');
+    }
+}

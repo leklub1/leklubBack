@@ -1,4 +1,4 @@
-import { createNewUserService,getDefaultDataService,insertUserDataService,getAllUserDataService,getUserEmailByIdService,getAllUsersService,getUserDataSuccesModalService,getAdvancedDataService } from '../Service/userService.js';
+import { createNewUserService,getDefaultDataService,insertUserDataService,getAllUserDataService,getUserEmailByIdService,getAllUsersService,getUserDataSuccesModalService,getAdvancedDataService,getUserNameByEmailService } from '../Service/userService.js';
 import { isSubscriptionValidBySubId,getSubscriptionActuallyByUserService,getUserIdBySubscriptionIdService,checkIfUseHasAlreadyHadSubscription,updateValidSubscription } from '../Service/subscriptionService.js';
 import { createNewUserPayment} from '../Service/paymentService.js';
 import { createPayment } from '../Utils/mollieUtils.js';
@@ -232,3 +232,24 @@ export const getAdvancedData = async (req,res) => {
         res.status(500).json({ error: 'Une erreur s\'est produite lors de la récupération des informations utilisateur.' });
     }
 };
+
+export const getUserNameByEmail = async (req,res) => {
+    const { email } = req.query;
+
+    if (!email) {
+        return res.status(400).json({ error: 'userId est requis dans la requête.' });
+    }
+
+    try {
+        const userData = await getUserNameByEmailService(email);
+        console.log(userData)
+        if (!userData) {
+            return res.status(404).json({ error: 'Utilisateur introuvable.' });
+        }
+
+        res.status(200).json(userData);
+    } catch (error) {
+        console.error('Erreur lors de la récupération des informations utilisateur:', error);
+        res.status(500).json({ error: 'Une erreur s\'est produite lors de la récupération des informations utilisateur.' });
+    }
+}
