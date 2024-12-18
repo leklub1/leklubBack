@@ -15,7 +15,7 @@ export const generateQRCode = (subId) => {
     let token = generateToken();
     let finalToken = token + '_' + subId;
 
-    const url = `http://180.149.197.7/valider.html?token=${finalToken}`;
+    const url = `https://leklubtoulouse.fr/valider.html?token=${finalToken}`;
 
     QRCode.toBuffer(url, { type: 'png' }, (err, buffer) => {
       if (err) {

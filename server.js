@@ -16,7 +16,12 @@ app.use(bodyParser.json({ limit: '50mb' }));  // 50 Mo pour les JSON
 app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
 
 app.use(express.json()); 
-
+app.use(cors({
+    origin: 'https://leklubtoulouse.fr',
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE'], 
+    allowedHeaders: ['Content-Type', 'Authorization'],
+}));
 app.use('/api/users', userRoutes);
 app.use('/api/payment', paymentRoutes);
 app.use('/api/subscription', subscriptionRoutes);

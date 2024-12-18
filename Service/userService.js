@@ -27,7 +27,7 @@ export const createNewUserService = async (email) => {
                     }else{
                         return {
                             status: 200,
-                            paymentUrl: `http://180.149.197.7/redirectForm.html?email=${email}&id=${existingUser[0].u_Id}`, // redirige direct sur le form
+                            paymentUrl: `https://leklubtoulouse.fr/redirectForm.html?email=${email}&id=${existingUser[0].u_Id}`, // redirige direct sur le form
                         };
                     }
                 }else{
@@ -282,8 +282,7 @@ export const getUserNameByEmailService = async (email) => {
             return rows[0];
         }
     } catch (error) {
-        console.error(`Erreur lors de la récupération des informations de l'utilisateur ${email} :`, error);
-        throw new Error('Erreur interne du serveur');
+
     }
 }
 

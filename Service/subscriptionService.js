@@ -202,7 +202,6 @@ export const checkIfUseHasAlreadyHadSubscription = async (userId) => {
             FROM subscriptions 
             WHERE s_UserId = ?
         `, [userId]);
-
         return rows[0].count > 1;
     } catch (error) {
         console.error('Erreur lors de la vérification si l\'utilisateur a une souscription :', error);

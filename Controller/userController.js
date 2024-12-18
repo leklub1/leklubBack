@@ -27,7 +27,7 @@ export const createNewUser = async (req, res) => {
             return res.status(202).json({message: "OK"});
         }else {
             const orderId = new Date().getTime();
-            const { paymentId, paymentUrl } = await createPayment(orderId, 'http://180.149.197.7:3000/api/payment/webhook',result.customerId);
+            const { paymentId, paymentUrl } = await createPayment(orderId, 'https://leklubtoulouse.fr/api/payment/webhook',result.customerId);
     
             if (paymentUrl && paymentId) {
 

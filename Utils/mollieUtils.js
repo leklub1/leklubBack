@@ -20,7 +20,7 @@ export async function createPayment(orderId, webhookUrl,customerId) {
         const payment = await mollieClient.payments.create({
             amount: { value: '4.80', currency: 'EUR' },
             description: `Abonnement mensuel : ${orderId}`,
-            redirectUrl: `http://180.149.197.7/checkPayment.html?paymentId=${orderId}`,
+            redirectUrl: `https://leklubtoulouse.fr/checkPayment.html?paymentId=${orderId}`,
             webhookUrl,
             metadata: { orderId }, 
             customerId: customerId,
@@ -68,7 +68,7 @@ export const createSubscriptionPayments = async (userId) => {
                 times: null,
                 interval: '1 months',
                 description: 'subscription payment',
-                webhookUrl: 'http://180.149.197.7:3000/api/subscription/webhook',
+                webhookUrl: 'https://leklubtoulouse.fr/api/subscription/webhook',
                 startDate: isoStartDate,
             });
             
