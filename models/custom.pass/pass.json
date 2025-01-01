@@ -1,0 +1,26 @@
+{
+  "formatVersion" : 1,
+  "passTypeIdentifier" : "pass.fr.leklubtoulouse.carteabonnement",
+  "teamIdentifier" : "S6VUB6HRUD",
+  "serialNumber" : "PASS-213213",
+  "barcode" : {
+    "message" : "",
+    "format" : "PKBarcodeFormatQR",
+    "messageEncoding" : "iso-8859-1"
+  },
+  "organizationName" : "LekluborganizationName",
+  "description" : "LeKlubdescription",
+  "logoText" : "LeKlublogoText",
+  "foregroundColor" : "rgb(255, 255, 255)",
+  "backgroundColor" : "#f6ba00",
+  "generic" : {
+    "primaryFields" : [
+    ],
+    "secondaryFields" : [
+    ],
+    "auxiliaryFields" : [
+    ],
+    "backFields" : [
+    ]
+  }
+}

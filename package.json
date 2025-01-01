@@ -23,6 +23,7 @@
     "mysql2": "^3.11.5",
     "node-cron": "^3.0.3",
     "nodemailer": "^6.9.16",
+    "passkit-generator": "^3.2.0",
     "qrcode": "^1.5.4",
     "sharp": "^0.33.5"
   },
