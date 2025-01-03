@@ -3,7 +3,7 @@ import { isSubscriptionValidBySubId,getSubscriptionActuallyByUserService,getUser
 import { createNewUserPayment} from '../Service/paymentService.js';
 import { createPayment } from '../Utils/mollieUtils.js';
 import { createS3Folders,uploadProfilePhoto,uploadQrCode,getProfilePhotoUrl,getQrCodeImage } from '../Service/s3Service.js'
-import { generateQRCode } from '../Utils/qrCodeUtils.js';
+import { generateQRCode,generateToken } from '../Utils/qrCodeUtils.js';
 import { insertQrCodeInDb,checkIfValidToken } from '../Service/qrCodeService.js';
 import { sendEmail,sendQrCodeEmail } from '../Utils/emailUtils.js';
 /**
@@ -99,7 +99,9 @@ export const insertUserData = async (req, res) => {
         if(subId !== null){
             let updateStatusSubscription = await updateValidSubscription(subId);
             if(updateStatusSubscription){
-                let { buffer: qrCodeBuffer, finalToken } = await generateQRCode(subId);
+                let token = generateToken();
+                let { buffer: qrCodeBuffer, finalToken } = await generateQRCode(subId,token);                
+
                 await uploadQrCode(userId,qrCodeBuffer);
                 await insertQrCodeInDb(userId,finalToken);
         

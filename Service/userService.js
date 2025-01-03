@@ -304,3 +304,27 @@ export const getUserIdByEmail = async (email) => {
         throw new Error('Erreur interne du serveur');
     }
 }
+
+export const getUserWalletData = async (userId) => {
+    try {
+        const [rows] = await db.query('SELECT q_Token FROM qrcode WHERE q_UserId = ?', [userId]);
+        const [rows2] = await db.query('SELECT s_CreatedAt FROM subscriptions WHERE s_UserId = ? AND (s_StatusId = 1 OR s_StatusId = 2)', [userId]);
+        const [rows3] = await db.query('SELECT u_FirstName, u_LastName FROM users WHERE u_Id = ?', [userId]);
+
+        if (!rows.length || !rows2.length || !rows3.length) {
+            throw new Error('Data not found for the given userId');
+        }
+
+        const token = `https://leklubtoulouse.fr/valider.html?token=${rows[0].q_Token}`;
+
+        return {
+            token,
+            subscriptionCreatedAt: rows2[0].s_CreatedAt,
+            firstName: rows3[0].u_FirstName,
+            lastName: rows3[0].u_LastName
+        };
+    } catch (error) {
+        console.error(`Erreur lors de la récupération des informations de l'utilisateur ${userId}:`, error);
+        throw new Error('Erreur interne du serveur');
+    }
+};

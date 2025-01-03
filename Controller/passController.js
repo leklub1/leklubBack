@@ -1,22 +1,22 @@
 import { generatePKPass } from '../Service/passGeneratorService.js';
+import { getUserWalletData } from '../Service/userService.js';
 
 export const generatePassHandler = async (req, res) => {
   try {
 
-    const passData = {
-      // headerFields: [],
-      // primaryFields: [],
+    const userId = req.query.id;
+    if (!userId) {return res.status(400).json({ error: "Missing userId in the query string." });}
+    let data = await getUserWalletData(userId);
 
+    const passData = {
       secondaryFields: [
-        { key: 'secondary1', label: 'Abonné depuis le : ', value: '18:40', textAlignment: 'PKTextAlignmentCenter' },
-        { key: 'sec2', label: 'Nom du client : ', value: '19:10', textAlignment: 'PKTextAlignmentCenter' },
+        { key: 'secondary1', label: 'Abonné depuis le : ', value: new Date(data.subscriptionCreatedAt).toISOString().split('T')[0], textAlignment: 'PKTextAlignmentCenter' },
+        { key: 'sec2', label: 'Nom du client : ', value: data.lastName + ' ' + data.firstName, textAlignment: 'PKTextAlignmentCenter' },
       ],
-      // auxiliaryFields: [],
-      // backFields: [],
     };
 
     console.log('Génération du PKPass...');
-    const passBuffer = await generatePKPass(passData);
+    const passBuffer = await generatePKPass(passData,data.token);
     console.log(passBuffer);
     console.log('PKPass généré.');
 

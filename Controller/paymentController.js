@@ -44,11 +44,13 @@ export const getPaymentStatus = async (req, res) => {
 
     try {
         const status = await getPaymentStatusService(orderId);
-
+        console.log("status",status)
         if(status === 2){
             let userId = await getUserIdByOrderId(orderId);
+            console.log("userId",userId)
             const { subscriptionId, createdAt, nextPaymentDate, startDate, status } = await createSubscriptionPayments(userId);
             let statusId = getIdWithLib(status);
+            console.log(userId,subscriptionId,startDate,statusId,createdAt,nextPaymentDate);
             await createNewUserSubscription(userId,subscriptionId,startDate,statusId,createdAt,nextPaymentDate);
         }
 
